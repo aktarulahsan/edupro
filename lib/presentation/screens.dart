@@ -1,0 +1,8 @@
+export 'package:edupro/presentation/auth/auth.screen.dart';
+export 'package:edupro/presentation/bcs/bcs.screen.dart';
+export 'package:edupro/presentation/description/description.screen.dart';
+export 'package:edupro/presentation/home/home.screen.dart';
+export 'package:edupro/presentation/mcqPractice/mcq_practice.screen.dart';
+export 'package:edupro/presentation/mockExam/mock_exam.screen.dart';
+export 'package:edupro/presentation/splash/splash.screen.dart';
+export 'package:edupro/presentation/subjective/subjective.screen.dart';
