@@ -71,5 +71,10 @@ class Nav {
       page: () => const SettingScreen(),
       binding: SettingControllerBinding(),
     ),
+    GetPage(
+      name: Routes.SCOREBOARD,
+      page: () => const ScoreboardScreen(),
+      binding: ScoreboardControllerBinding(),
+    ),
   ];
 }

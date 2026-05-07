@@ -10,7 +10,8 @@ class Routes {
   static const HOME = '/home';
   static const MCQ_PRACTICE = '/mcq-practice';
   static const MOCK_EXAM = '/mock-exam';
+  static const SETTING = '/setting';
   static const SPLASH = '/splash';
   static const SUBJECTIVE = '/subjective';
-  static const SETTING = '/setting';
+  static const SCOREBOARD = '/scoreboard';
 }

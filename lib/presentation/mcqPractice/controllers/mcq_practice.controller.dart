@@ -105,7 +105,7 @@ class McqPracticeController extends GetxController {
                   () => QuestionScreen(
                     quizList: questionList.toList(),
                     title: title,
-                      setNo: setNo
+                    setNo: setNo,
                   ),
                   transition: Transition.rightToLeft,
                   duration: const Duration(milliseconds: 300),
@@ -157,10 +157,10 @@ class McqPracticeController extends GetxController {
 
       final request = SubmitQuizRequest(
         setId: setId,
-          setNo:setNo,
-        studentId: user.mobileNumber is int
-            ? user.mobileNumber as int
-            : int.tryParse(user.mobileNumber?.toString() ?? '') ?? 0,
+        setNo: setNo,
+        studentId: user.userId is int
+            ? user.userId as int
+            : int.tryParse(user.userId?.toString() ?? '') ?? 0,
         answers: answers,
         totalTimeSpent: totalTimeSpent,
         autoSubmitted: autoSubmitted,
@@ -246,7 +246,7 @@ class McqPracticeController extends GetxController {
     required Map<int, dynamic> selectedOptions,
     required int totalTimeSpent,
     required String setId,
-    required int  setNo,
+    required int setNo,
     required bool autoSubmitted,
   }) {
     final answers = <QuizAnswer>[];

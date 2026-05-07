@@ -12,18 +12,36 @@ class HomeController extends GetxController {
   final userXP = 2450.obs;
 
   final List<FeatureCardData> featureCards = const [
-    FeatureCardData(Icons.help_outline_rounded, 'MCQ Practice',
-        'Topic-wise multiple choice questions with instant feedback'),
-    FeatureCardData(Icons.account_balance_outlined, 'BCS Questions',
-        'Bangladesh Civil Service bank, real exam style'),
-    FeatureCardData(Icons.view_in_ar_rounded, 'Description',
-        'Surprise questions from all categories'),
-    FeatureCardData(Icons.checklist_rounded, 'Mock Exam',
-        'Full-length simulated test with scoring'),
-    FeatureCardData(Icons.cast_for_education_rounded, 'Subjective',
-        'Written answer practice with model solutions'),
-    FeatureCardData(Icons.bar_chart_rounded, 'Scoreboard',
-        'Track your rank and progress over time'),
+    FeatureCardData(
+      Icons.help_outline_rounded,
+      'MCQ Practice',
+      'Topic-wise multiple choice questions with instant feedback',
+    ),
+    FeatureCardData(
+      Icons.account_balance_outlined,
+      'BCS Questions',
+      'Bangladesh Civil Service bank, real exam style',
+    ),
+    FeatureCardData(
+      Icons.view_in_ar_rounded,
+      'Description',
+      'Surprise questions from all categories',
+    ),
+    FeatureCardData(
+      Icons.checklist_rounded,
+      'Mock Exam',
+      'Full-length simulated test with scoring',
+    ),
+    FeatureCardData(
+      Icons.cast_for_education_rounded,
+      'Subjective',
+      'Written answer practice with model solutions',
+    ),
+    FeatureCardData(
+      Icons.bar_chart_rounded,
+      'Scoreboard',
+      'Track your rank and progress over time',
+    ),
   ];
 
   @override
@@ -48,7 +66,7 @@ class HomeController extends GetxController {
     debugPrint('Navigating to index: $index');
     switch (index) {
       case 0:
-      // Already on home
+        // Already on home
         break;
       case 1:
         Get.toNamed(Routes.BCS);
@@ -83,13 +101,7 @@ class HomeController extends GetxController {
         Get.toNamed(Routes.SUBJECTIVE);
         break;
       default:
-        Get.snackbar(
-          'Coming Soon',
-          'This feature will be available soon!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.grey[800],
-          colorText: Colors.white,
-        );
+        Get.toNamed(Routes.SCOREBOARD);
         break;
     }
   }
@@ -107,4 +119,3 @@ class HomeController extends GetxController {
     }
   }
 }
-
