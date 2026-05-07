@@ -12,7 +12,6 @@ import 'package:get/get.dart';
 
 import 'controllers/splash.controller.dart';
 
-
 // class SplashScreen extends GetView<SplashController> {
 //   const SplashScreen({super.key});
 //   @override
@@ -27,16 +26,8 @@ import 'controllers/splash.controller.dart';
 //         child: Image.asset(
 //           R.ASSETS_IMAGES_LOGO_PNG,
 //         ).animate().scale(duration: 2000.ms).then()
-//           ..shimmer(),
-//       ),
-//     );
-//   }
-// }
-//
-//
-//
-// mixin ms {}
 import 'package:edupro/infrastructure/constant/resources.dart';
+import 'package:edupro/infrastructure/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:edupro/infrastructure/dal/daos/usersModel.dart';
 import 'package:edupro/infrastructure/navigation/bindings/controllers/auth.controller.binding.dart';
@@ -81,12 +72,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundWhite,
       body: Center(
         child: Image.asset(
           R.ASSETS_IMAGES_LOGO_PNG,
-        ).animate().scale(duration: 2000.ms).then()
-          ..shimmer(),
+        ).animate().scale(duration: 2000.ms).then()..shimmer(),
       ),
     );
   }

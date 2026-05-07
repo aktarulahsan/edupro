@@ -12,7 +12,7 @@ class AuthScreen extends GetView<AuthController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundWhite,
       body: SingleChildScrollView(
         child: Container(
           margin: const EdgeInsets.fromLTRB(25, 50, 25, 10),
@@ -83,8 +83,9 @@ class AuthScreen extends GetView<AuthController> {
         keyboardType: TextInputType.emailAddress,
         validator: (val) {
           if ((val!.isNotEmpty) &&
-              !RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$")
-                  .hasMatch(val)) {
+              !RegExp(
+                r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$",
+              ).hasMatch(val)) {
             return "Enter a valid email address";
           }
           return null;
@@ -119,7 +120,7 @@ class AuthScreen extends GetView<AuthController> {
         return Column(
           children: [
             Obx(
-                  () => CheckboxListTile(
+              () => CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 controlAffinity: ListTileControlAffinity.leading,
                 title: const Text(
@@ -201,7 +202,7 @@ class AuthScreen extends GetView<AuthController> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: darkBlue,
+              color: AppColors.secondary,
             ),
           ),
         ),

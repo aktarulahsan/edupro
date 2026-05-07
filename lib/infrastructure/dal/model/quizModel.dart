@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 
 List<QuizModel> quizModelPostFromJson2(var str) {
@@ -9,7 +8,9 @@ List<QuizModel> quizModelPostFromJson2(var str) {
   if (decoded is Map) {
     return [QuizModel.fromJson(decoded.cast<String, dynamic>())];
   } else if (decoded is List) {
-    return decoded.map((e) => QuizModel.fromJson(e.cast<String, dynamic>())).toList();
+    return decoded
+        .map((e) => QuizModel.fromJson(e.cast<String, dynamic>()))
+        .toList();
   }
 
   return [];
@@ -20,8 +21,6 @@ List<QuizModel> quizModelPostFromJson(var str) =>
 
 List<QuizList> quizListPostFromJson(var str) =>
     List<QuizList>.from(json.decode(str!).map((x) => QuizList.fromJson(x)));
-
-
 
 class QuizModel {
   String? status;
@@ -54,7 +53,8 @@ class QuizModel {
     this.quizList,
   });
 
-  factory QuizModel.fromRawJson(String str) => QuizModel.fromJson(json.decode(str));
+  factory QuizModel.fromRawJson(String str) =>
+      QuizModel.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
@@ -74,8 +74,8 @@ class QuizModel {
     quizList: json["quizList"] == null
         ? []
         : (json["quizList"] as List)
-        .map((x) => QuizList.fromJson(x.cast<String, dynamic>()))
-        .toList(),
+              .map((x) => QuizList.fromJson(x.cast<String, dynamic>()))
+              .toList(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -99,6 +99,7 @@ class QuizList {
   dynamic mark;
   String? examId;
   String? questionId;
+  int? questionNo;
   String? questionText;
   String? givenAns;
   String? correctAnswer;
@@ -110,6 +111,7 @@ class QuizList {
     this.mark,
     this.examId,
     this.questionId,
+    this.questionNo,
     this.questionText,
     this.givenAns,
     this.correctAnswer,
@@ -118,7 +120,8 @@ class QuizList {
     this.optionList,
   });
 
-  factory QuizList.fromRawJson(String str) => QuizList.fromJson(json.decode(str));
+  factory QuizList.fromRawJson(String str) =>
+      QuizList.fromJson(json.decode(str));
 
   String toRawJson() => json.encode(toJson());
 
@@ -126,7 +129,11 @@ class QuizList {
     mark: json["mark"],
     examId: json["examId"]?.toString(),
     questionId: json["questionId"]?.toString(),
-    questionText: json["questionText"]?.toString().replaceAll(RegExp(r'<[^>]*>|\\r|\\n'), ''),
+    questionNo: json["questionNo"],
+    questionText: json["questionText"]?.toString().replaceAll(
+      RegExp(r'<[^>]*>|\\r|\\n'),
+      '',
+    ),
     givenAns: json["givenAns"]?.toString() ?? "",
     correctAnswer: json["correctAnswer"]?.toString() ?? "",
     explanation: json["explanation"]?.toString(),
@@ -134,14 +141,15 @@ class QuizList {
     optionList: json["optionList"] == null
         ? []
         : (json["optionList"] as List)
-        .map((x) => Option.fromJson(x.cast<String, dynamic>()))
-        .toList(),
+              .map((x) => Option.fromJson(x.cast<String, dynamic>()))
+              .toList(),
   );
 
   Map<String, dynamic> toJson() => {
     "mark": mark,
     "examId": examId,
     "questionId": questionId,
+    "questionNo": questionNo,
     "questionText": questionText,
     "givenAns": givenAns,
     "correctAnswer": correctAnswer,
@@ -155,8 +163,8 @@ class Option {
   int? optionNo;
   String? optionId;
   String? questionId;
-  String? option;  // Changed from dynamic to String?
-  String? answer;  // Changed from dynamic to String?
+  String? option; // Changed from dynamic to String?
+  String? answer; // Changed from dynamic to String?
   bool? correct;
 
   Option({
@@ -173,16 +181,16 @@ class Option {
   String toRawJson() => json.encode(toJson());
 
   factory Option.fromJson(Map<String, dynamic> json) => Option(
-      optionNo: json["optionNo"]??0,
+    optionNo: json["optionNo"] ?? 0,
     optionId: json["optionId"]?.toString(),
     questionId: json["questionId"]?.toString(),
-    option: json["option"]?.toString(),  // Convert to String
-    answer: json["answer"]?.toString(),   // Convert to String
+    option: json["option"]?.toString(), // Convert to String
+    answer: json["answer"]?.toString(), // Convert to String
     correct: json["correct"] as bool?,
   );
 
   Map<String, dynamic> toJson() => {
-    "optionNo":optionNo,
+    "optionNo": optionNo,
     "optionId": optionId,
     "questionId": questionId,
     "option": option,

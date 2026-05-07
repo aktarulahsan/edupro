@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 
+import '../../infrastructure/theme/app_colors.dart';
+import '../../infrastructure/theme/app_bar_helper.dart';
 import 'controllers/mock_exam.controller.dart';
 
 class MockExamScreen extends GetView<MockExamController> {
@@ -9,14 +11,15 @@ class MockExamScreen extends GetView<MockExamController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('MockExamScreen'),
+      backgroundColor: AppColors.background,
+      appBar: AppBarHelper.buildSimpleAppBar(
+        title: 'Mock Exam',
         centerTitle: true,
       ),
       body: const Center(
         child: Text(
-          'MockExamScreen is working',
-          style: TextStyle(fontSize: 20),
+          'MockExam is coming soon',
+          style: TextStyle(fontSize: 20, color: AppColors.textPrimary),
         ),
       ),
     );

@@ -54,7 +54,8 @@ class AuthModule {
   final String registration = p.join(_baseURL, 'registration');
   final String parent = p.join(_baseURL, 'parent');
 
-  String login3 (String uName, String uPass) => p.join(_baseURL, 'wahUser/login?email_address=$uName&password=$uPass');
+  String login3(String uName, String uPass) =>
+      p.join(_baseURL, 'wahUser/login?email_address=$uName&password=$uPass');
 }
 
 class QuizModule {
@@ -64,8 +65,12 @@ class QuizModule {
   final String getQuizSet = p.join(_baseURL, 'exam/getSet');
   final String generateQuizSet = p.join(_baseURL, 'set/generate_quiz_set');
   final String subjectGroup = p.join(_baseURL, 'set/get_subject_group');
-  final String subjectWiseQuestions = p.join(_baseURL, 'set/generate_subject_group_sets');
+  final String submitQuiz = p.join(_baseURL, 'submit/submit_quiz');
 
+  final String subjectWiseQuestions = p.join(
+    _baseURL,
+    'set/generate_subject_group_sets',
+  );
 
   final String getQuestionSet = p.join(_baseURL, 'set/get_questions_by_set');
   String getQuestionSetUrl(dynamic setId) =>

@@ -4,16 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../infrastructure/theme/app_colors.dart';
-import 'controllers/mcq_practice.controller.dart';
-
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../../infrastructure/theme/app_colors.dart';
-import 'controllers/mcq_practice.controller.dart';
-
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../../infrastructure/theme/app_colors.dart';
+import '../../infrastructure/theme/app_bar_helper.dart';
 import 'controllers/mcq_practice.controller.dart';
 
 class McqPracticeScreen extends GetView<McqPracticeController> {
@@ -22,24 +13,10 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBackground,
-      appBar: AppBar(
-        title: const Text(
-          'MCQ Practice',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
-        ),
+      backgroundColor: AppColors.background,
+      appBar: AppBarHelper.buildSimpleAppBar(
+        title: 'MCQ Practice',
         centerTitle: true,
-        backgroundColor: kCardBg,
-        elevation: 0,
-        foregroundColor: Colors.black87,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => Get.back(),
-        ),
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -48,7 +25,7 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircularProgressIndicator(
-                  color: Colors.blue,
+                  color: AppColors.primary,
                   strokeWidth: 3,
                 ),
                 SizedBox(height: 16),
@@ -66,11 +43,7 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.red[300],
-                ),
+                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
                 const SizedBox(height: 16),
                 Text(
                   controller.errorMessage.value,
@@ -99,11 +72,7 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.quiz_outlined,
-                  size: 64,
-                  color: Colors.grey,
-                ),
+                Icon(Icons.quiz_outlined, size: 64, color: Colors.grey),
                 SizedBox(height: 16),
                 Text(
                   'No exam sets available',
@@ -129,7 +98,11 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
     );
   }
 
-  Widget _buildExamSetCard(BuildContext context, ExamSetModel examSet, int index) {
+  Widget _buildExamSetCard(
+    BuildContext context,
+    ExamSetModel examSet,
+    int index,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -160,13 +133,16 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
                       height: 50,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.blue.shade400, Colors.purple.shade400],
+                          colors: [
+                            Colors.blue.shade400,
+                            Colors.purple.shade400,
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
                         child: Text(
-                          'S-${index +1 }',
+                          'S-${index + 1}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -181,7 +157,7 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Global Set ${index+1}',
+                            'Global Set ${index + 1}',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -240,13 +216,7 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
         children: [
           Icon(icon, size: 12, color: Colors.grey[600]),
           const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[600])),
         ],
       ),
     );
@@ -258,9 +228,7 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
       context: context,
       barrierDismissible: false, // Prevent accidental dismissal
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
             Container(
@@ -269,16 +237,13 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
                 color: Colors.blue.shade50,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
-                Icons.quiz_rounded,
-                color: Colors.blue.shade700,
-              ),
+              child: Icon(Icons.quiz_rounded, color: Colors.blue.shade700),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 // examSet.setName,
-                'Global Set ${index +1}',
+                'Global Set ${index + 1}',
                 style: const TextStyle(fontSize: 18),
               ),
             ),
@@ -288,9 +253,17 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDialogInfoRow(Icons.format_list_numbered, 'Set Number', '${examSet.setNo}'),
+            _buildDialogInfoRow(
+              Icons.format_list_numbered,
+              'Set Number',
+              '${examSet.setNo}',
+            ),
             const SizedBox(height: 12),
-            _buildDialogInfoRow(Icons.calendar_today, 'Created', _formatDate(examSet.createdAt)),
+            _buildDialogInfoRow(
+              Icons.calendar_today,
+              'Created',
+              _formatDate(examSet.createdAt),
+            ),
             const SizedBox(height: 12),
             _buildDialogInfoRow(Icons.access_time, 'Duration', '30 minutes'),
             const SizedBox(height: 16),
@@ -323,41 +296,44 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
             },
             child: const Text('Cancel'),
           ),
-          Obx(() => ElevatedButton(
-            onPressed: controller.isQuestionsLoading.value
-                ? null
-                : () async {
-              // Close the dialog first
-              Navigator.of(dialogContext).pop();
+          Obx(
+            () => ElevatedButton(
+              onPressed: controller.isQuestionsLoading.value
+                  ? null
+                  : () async {
+                      // Close the dialog first
+                      Navigator.of(dialogContext).pop();
 
-              // Wait a frame for the dialog to close completely
-              await Future.delayed(Duration.zero);
+                      // Wait a frame for the dialog to close completely
+                      await Future.delayed(Duration.zero);
 
-              // Then load questions with the original context
-              controller.getQuestBySetId(
-                examSet.setNo.toString(),
-                examSet.setName,
-                // context, // Use the original screen context, not dialog context
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                      // Then load questions with the original context
+                      controller.getQuestBySetId(
+                        examSet.setNo.toString(),
+                        examSet.setName,
+                        examSet.setNo
+                        // context, // Use the original screen context, not dialog context
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
+              child: controller.isQuestionsLoading.value
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Start Quiz'),
             ),
-            child: controller.isQuestionsLoading.value
-                ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-                : const Text('Start Quiz'),
-          )),
+          ),
         ],
       ),
     );
@@ -466,17 +442,11 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
       children: [
         Icon(icon, size: 18, color: Colors.grey[600]),
         const SizedBox(width: 12),
-        Text(
-          label,
-          style: TextStyle(color: Colors.grey[600], fontSize: 13),
-        ),
+        Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
         const Spacer(),
         Text(
           value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 13,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
         ),
       ],
     );

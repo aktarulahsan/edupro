@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../infrastructure/theme/app_colors.dart';
+import '../../infrastructure/theme/app_bar_helper.dart';
 import 'controllers/description.controller.dart';
 
 class DescriptionScreen extends GetView<DescriptionController> {
@@ -9,37 +11,11 @@ class DescriptionScreen extends GetView<DescriptionController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text(
-          'Subject Groups',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: Colors.deepPurple,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.deepPurple.shade700,
-                Colors.deepPurple.shade400,
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: () => controller.getGroupList(),
-          ),
-        ],
+      backgroundColor: AppColors.background,
+      appBar: AppBarHelper.buildGradientAppBar(
+        title: 'Subject Groups',
+        gradient: AppColors.primaryGradient,
+        onSettingsTap: () => controller.getGroupList(),
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -112,10 +88,7 @@ class DescriptionScreen extends GetView<DescriptionController> {
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -125,7 +98,10 @@ class DescriptionScreen extends GetView<DescriptionController> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -169,10 +145,7 @@ class DescriptionScreen extends GetView<DescriptionController> {
             Text(
               'There are no subject groups available at the moment. Please check back later.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -182,7 +155,10 @@ class DescriptionScreen extends GetView<DescriptionController> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -419,21 +395,21 @@ class DescriptionScreen extends GetView<DescriptionController> {
                       icon: Icons.description_outlined,
                       title: 'About this Subject',
                       content:
-                      'This subject group covers comprehensive topics in $subject. Designed to help students master concepts through interactive learning and assessments.',
+                          'This subject group covers comprehensive topics in $subject. Designed to help students master concepts through interactive learning and assessments.',
                     ),
                     const SizedBox(height: 16),
                     _buildInfoCard(
                       icon: Icons.quiz_outlined,
                       title: 'Assessment Details',
                       content:
-                      '• Multiple choice questions\n• Practice tests available\n• Progress tracking\n• Detailed performance analytics',
+                          '• Multiple choice questions\n• Practice tests available\n• Progress tracking\n• Detailed performance analytics',
                     ),
                     const SizedBox(height: 16),
                     _buildInfoCard(
                       icon: Icons.timeline_outlined,
                       title: 'Learning Path',
                       content:
-                      '• Beginner to advanced levels\n• Topic-wise breakdown\n• Regular assessments\n• Performance-based recommendations',
+                          '• Beginner to advanced levels\n• Topic-wise breakdown\n• Regular assessments\n• Performance-based recommendations',
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
@@ -444,7 +420,6 @@ class DescriptionScreen extends GetView<DescriptionController> {
                           // Navigate to subject details/quizzes
 
                           controller.getSubjectWiseQuestions(subject);
-
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.deepPurple,
@@ -483,21 +458,14 @@ class DescriptionScreen extends GetView<DescriptionController> {
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                size: 22,
-                color: Colors.deepPurple.shade600,
-              ),
+              Icon(icon, size: 22, color: Colors.deepPurple.shade600),
               const SizedBox(width: 8),
               Text(
                 title,

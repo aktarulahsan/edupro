@@ -1,7 +1,7 @@
 import 'package:edupro/infrastructure/dal/model/quizModel.dart';
+import 'package:edupro/infrastructure/theme/app_bar_helper.dart';
 import 'package:edupro/presentation/bcs/bcs_question.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
@@ -36,28 +36,9 @@ class BcsScreen extends GetView<BcsController> {
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: const Text(
-        'BCS Examination',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
-          letterSpacing: -0.5,
-          color: Color(0xFF2C3E50),
-        ),
-      ),
-      centerTitle: false,
-      elevation: 0,
-      backgroundColor: Colors.transparent,
-      systemOverlayStyle: SystemUiOverlayStyle.dark,
-      actions: [
-        IconButton(
-          onPressed: () => _showSettingsDialog(context),
-          icon: const Icon(Icons.settings_outlined, color: Color(0xFF2C3E50)),
-          tooltip: 'Settings',
-        ),
-        const SizedBox(width: 8),
-      ],
+    return AppBarHelper.buildAppBar(
+      title: 'BCS Examination',
+      onSettingsTap: () => _showSettingsDialog(context),
     );
   }
 
@@ -83,13 +64,10 @@ class BcsScreen extends GetView<BcsController> {
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  final quiz = controller.quizList[index];
-                  return _buildQuizCard(quiz);
-                },
-                childCount: controller.quizList.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final quiz = controller.quizList[index];
+                return _buildQuizCard(quiz);
+              }, childCount: controller.quizList.length),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 80)),
@@ -188,7 +166,9 @@ class BcsScreen extends GetView<BcsController> {
       totalCorrect += controller.getExamCorrectCount(examId);
     }
 
-    final overallProgress = totalQuestions > 0 ? totalAnswered / totalQuestions : 0.0;
+    final overallProgress = totalQuestions > 0
+        ? totalAnswered / totalQuestions
+        : 0.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -256,7 +236,9 @@ class BcsScreen extends GetView<BcsController> {
             child: LinearProgressIndicator(
               value: overallProgress,
               backgroundColor: const Color(0xFFE8ECF0),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4A90E2)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF4A90E2),
+              ),
               minHeight: 6,
             ),
           ),
@@ -266,10 +248,7 @@ class BcsScreen extends GetView<BcsController> {
             children: [
               Text(
                 'Overall Completion',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 11, color: Colors.grey[600]),
               ),
               Text(
                 '${(overallProgress * 100).toInt()}%',
@@ -297,10 +276,7 @@ class BcsScreen extends GetView<BcsController> {
                 const SizedBox(width: 8),
                 Text(
                   'Updating in background...',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey[500],
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                 ),
               ],
             ),
@@ -310,9 +286,12 @@ class BcsScreen extends GetView<BcsController> {
     );
   }
 
-
-
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Container(
@@ -332,13 +311,7 @@ class BcsScreen extends GetView<BcsController> {
             color: Color(0xFF2C3E50),
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey[600],
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
       ],
     );
   }
@@ -363,7 +336,7 @@ class BcsScreen extends GetView<BcsController> {
             controller.currentQuiz.value = quiz;
             controller.loadExamAnswers(examId, quiz.quizList ?? []);
             Get.to(
-                  () => BcsQuestion(quizModel: quiz),
+              () => BcsQuestion(quizModel: quiz),
               transition: Transition.rightToLeft,
             );
           },
@@ -380,14 +353,22 @@ class BcsScreen extends GetView<BcsController> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: isCompleted
-                              ? [const Color(0xFF4CAF50), const Color(0xFF45A049)]
-                              : [const Color(0xFF4A90E2), const Color(0xFF357ABD)],
+                              ? [
+                                  const Color(0xFF4CAF50),
+                                  const Color(0xFF45A049),
+                                ]
+                              : [
+                                  const Color(0xFF4A90E2),
+                                  const Color(0xFF357ABD),
+                                ],
                         ),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Center(
                         child: Icon(
-                          isCompleted ? Icons.verified : Icons.assignment_rounded,
+                          isCompleted
+                              ? Icons.verified
+                              : Icons.assignment_rounded,
                           color: Colors.white,
                           size: 26,
                         ),
@@ -456,10 +437,7 @@ class BcsScreen extends GetView<BcsController> {
                     children: [
                       Text(
                         'Progress',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                       ),
                       Text(
                         '${(progress * 100).toInt()}%',
@@ -478,7 +456,9 @@ class BcsScreen extends GetView<BcsController> {
                       value: progress,
                       backgroundColor: const Color(0xFFE8ECF0),
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        isCompleted ? const Color(0xFF4CAF50) : const Color(0xFF4A90E2),
+                        isCompleted
+                            ? const Color(0xFF4CAF50)
+                            : const Color(0xFF4A90E2),
                       ),
                       minHeight: 4,
                     ),
@@ -487,7 +467,10 @@ class BcsScreen extends GetView<BcsController> {
                 if (isCompleted) ...[
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF4CAF50).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -495,7 +478,11 @@ class BcsScreen extends GetView<BcsController> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified, size: 14, color: Color(0xFF4CAF50)),
+                        Icon(
+                          Icons.verified,
+                          size: 14,
+                          color: Color(0xFF4CAF50),
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'Completed',
@@ -574,7 +561,11 @@ class BcsScreen extends GetView<BcsController> {
               height: 200,
               repeat: false,
               errorBuilder: (context, error, stackTrace) {
-                return Icon(Icons.error_outline, size: 80, color: Colors.red[300]);
+                return Icon(
+                  Icons.error_outline,
+                  size: 80,
+                  color: Colors.red[300],
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -600,7 +591,10 @@ class BcsScreen extends GetView<BcsController> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4A90E2),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -624,7 +618,11 @@ class BcsScreen extends GetView<BcsController> {
               width: 200,
               height: 200,
               errorBuilder: (context, error, stackTrace) {
-                return Icon(Icons.quiz_outlined, size: 80, color: Colors.grey[400]);
+                return Icon(
+                  Icons.quiz_outlined,
+                  size: 80,
+                  color: Colors.grey[400],
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -648,7 +646,10 @@ class BcsScreen extends GetView<BcsController> {
               label: const Text('Refresh'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF4A90E2),
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -683,10 +684,7 @@ class BcsScreen extends GetView<BcsController> {
             const SizedBox(height: 8),
             const Text(
               'Manage your quiz preferences and data',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF7F8C8D),
-              ),
+              style: TextStyle(fontSize: 14, color: Color(0xFF7F8C8D)),
             ),
             const SizedBox(height: 24),
             _buildSettingsTile(
@@ -760,10 +758,7 @@ class BcsScreen extends GetView<BcsController> {
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey[600],
-        ),
+        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
       ),
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
@@ -774,9 +769,7 @@ class BcsScreen extends GetView<BcsController> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Reset All Progress',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -788,7 +781,10 @@ class BcsScreen extends GetView<BcsController> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF7F8C8D))),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF7F8C8D)),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -821,9 +817,7 @@ class BcsScreen extends GetView<BcsController> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Clear Cache',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -835,7 +829,10 @@ class BcsScreen extends GetView<BcsController> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF7F8C8D))),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Color(0xFF7F8C8D)),
+            ),
           ),
           ElevatedButton(
             onPressed: () async {

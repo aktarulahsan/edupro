@@ -1,4 +1,6 @@
 import 'package:edupro/presentation/subjective/controllers/subjective.controller.dart';
+import 'package:edupro/infrastructure/theme/app_colors.dart';
+import 'package:edupro/infrastructure/theme/app_bar_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,15 +10,10 @@ class SubjectiveScreen extends GetView<SubjectiveController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Subject Groups',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+      backgroundColor: AppColors.background,
+      appBar: AppBarHelper.buildSimpleAppBar(
+        title: 'Subjective Practice',
         centerTitle: true,
-        elevation: 2,
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
       ),
       body: Obx(() {
         // Show loading state
@@ -45,11 +42,7 @@ class SubjectiveScreen extends GetView<SubjectiveController> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 80,
-                  color: Colors.red.shade300,
-                ),
+                Icon(Icons.error_outline, size: 80, color: Colors.red.shade300),
                 const SizedBox(height: 20),
                 Text(
                   'Failed to load subjects',

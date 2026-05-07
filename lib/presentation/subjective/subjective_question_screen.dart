@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:edupro/infrastructure/dal/model/option_model.dart';
+import 'package:edupro/infrastructure/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,7 +20,8 @@ class SubjectiveQuestionScreen extends StatefulWidget {
   final String title;
 
   @override
-  State<SubjectiveQuestionScreen> createState() => _SubjectiveQuestionScreenState();
+  State<SubjectiveQuestionScreen> createState() =>
+      _SubjectiveQuestionScreenState();
 }
 
 class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
@@ -64,7 +66,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
     // Initialize keys for each question
     _questionKeys = List.generate(
       widget.quizList.length,
-          (index) => GlobalKey(),
+      (index) => GlobalKey(),
     );
   }
 
@@ -124,7 +126,8 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
           final nextQuestionKey = _questionKeys[currentIndex + 1];
 
           // Get the render box of the next question
-          final RenderBox? nextQuestionBox = nextQuestionKey.currentContext?.findRenderObject() as RenderBox?;
+          final RenderBox? nextQuestionBox =
+              nextQuestionKey.currentContext?.findRenderObject() as RenderBox?;
 
           if (nextQuestionBox != null) {
             // Get the screen height
@@ -136,12 +139,16 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
 
             // Calculate the offset to center the question
             // We want the question to appear in the middle of the screen
-            final targetOffset = _scrollController.offset +
+            final targetOffset =
+                _scrollController.offset +
                 (boxPosition.dy - (screenHeight / 2) + (boxHeight / 2));
 
             // Smooth scroll to the target position
             _scrollController.animateTo(
-              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+              targetOffset.clamp(
+                0.0,
+                _scrollController.position.maxScrollExtent,
+              ),
               duration: const Duration(milliseconds: 600),
               curve: Curves.easeInOutCubic,
             );
@@ -183,14 +190,16 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
   void _scrollToQuestion(int questionIndex) {
     if (_scrollController.hasClients && questionIndex < _questionKeys.length) {
       final questionKey = _questionKeys[questionIndex];
-      final RenderBox? questionBox = questionKey.currentContext?.findRenderObject() as RenderBox?;
+      final RenderBox? questionBox =
+          questionKey.currentContext?.findRenderObject() as RenderBox?;
 
       if (questionBox != null) {
         final screenHeight = MediaQuery.of(context).size.height;
         final boxPosition = questionBox.localToGlobal(Offset.zero);
         final boxHeight = questionBox.size.height;
 
-        final targetOffset = _scrollController.offset +
+        final targetOffset =
+            _scrollController.offset +
             (boxPosition.dy - (screenHeight / 2) + (boxHeight / 2));
 
         _scrollController.animateTo(
@@ -251,7 +260,8 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
                     children: [
                       ...List.generate(widget.quizList.length, (index) {
                         return Container(
-                          key: _questionKeys[index], // Use GlobalKey for each question
+                          key:
+                              _questionKeys[index], // Use GlobalKey for each question
                           child: _buildQuestionCard(
                             widget.quizList[index],
                             index,
@@ -275,15 +285,12 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
     return AppBar(
       title: Text(
         widget.title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
       ),
       centerTitle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.appBarBackground,
       elevation: 0,
-      foregroundColor: Colors.black87,
+      foregroundColor: AppColors.appBarForeground,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new, size: 20),
         onPressed: () {
@@ -315,7 +322,9 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Text('Exit Quiz?'),
           content: Text(
             'You have answered $answeredQuestions out of $totalQuestions questions. Your progress will be lost if you exit.',
@@ -358,10 +367,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
             children: [
               const Text(
                 'Jump to Question',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               const Text(
@@ -387,7 +393,9 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isAnswered ? Colors.green : Colors.grey.shade200,
+                          color: isAnswered
+                              ? Colors.green
+                              : Colors.grey.shade200,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -435,7 +443,10 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [timerColor.withOpacity(0.1), timerColor.withOpacity(0.05)],
+                colors: [
+                  timerColor.withOpacity(0.1),
+                  timerColor.withOpacity(0.05),
+                ],
               ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: timerColor.withOpacity(0.3)),
@@ -443,11 +454,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.timer_outlined,
-                  color: timerColor,
-                  size: 24,
-                ),
+                Icon(Icons.timer_outlined, color: timerColor, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   'Time Remaining:',
@@ -483,7 +490,10 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(12),
@@ -597,7 +607,11 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
     );
   }
 
-  Widget _buildCheckboxItem(OptionModel item, int questionIndex, int optionIndex) {
+  Widget _buildCheckboxItem(
+    OptionModel item,
+    int questionIndex,
+    int optionIndex,
+  ) {
     final selectedOptions = _selectedOptions[questionIndex] as List? ?? [];
     final isChecked = selectedOptions.contains(optionIndex);
 
@@ -628,7 +642,9 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
               }
               (_selectedOptions[questionIndex] as List<int>).add(optionIndex);
             } else {
-              (_selectedOptions[questionIndex] as List<int>).remove(optionIndex);
+              (_selectedOptions[questionIndex] as List<int>).remove(
+                optionIndex,
+              );
               if ((_selectedOptions[questionIndex] as List<int>).isEmpty) {
                 _selectedOptions.remove(questionIndex);
               }
@@ -644,9 +660,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
         controlAffinity: ListTileControlAffinity.leading,
         dense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -719,32 +733,32 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
             ),
             child: _isSubmitting
                 ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
                 : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  canSubmit ? Icons.check_circle : Icons.lock_outline,
-                  size: 22,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  canSubmit
-                      ? 'Submit Quiz ($answeredQuestions/$totalQuestions)'
-                      : 'at least 1 question to submit',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        canSubmit ? Icons.check_circle : Icons.lock_outline,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        canSubmit
+                            ? 'Submit Quiz ($answeredQuestions/$totalQuestions)'
+                            : 'at least 1 question to submit',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
@@ -756,7 +770,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
 
     htmlString = htmlString.replaceAllMapped(
       RegExp(r'<sup>(.*?)</sup>', caseSensitive: false),
-          (match) => _convertToSuperscript(match.group(1) ?? ''),
+      (match) => _convertToSuperscript(match.group(1) ?? ''),
     );
 
     final replacements = {
@@ -768,7 +782,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
       '&#39;': "'",
       '&rsquo;': "'",
       '&ldquo;': '"',
-      '&rdquo;': '"'
+      '&rdquo;': '"',
     };
 
     replacements.forEach((key, value) {
@@ -776,7 +790,10 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
     });
 
     htmlString = htmlString.replaceAll(RegExp(r'<[^>]*>'), '');
-    htmlString = htmlString.replaceFirst(RegExp(r'^প্রশ্ন\s+[\d০-৯]+\.\s*'), '');
+    htmlString = htmlString.replaceFirst(
+      RegExp(r'^প্রশ্ন\s+[\d০-৯]+\.\s*'),
+      '',
+    );
     htmlString = htmlString.replaceFirst(RegExp(r'^[\d]+\.\s*'), '');
     htmlString = htmlString.replaceFirst(RegExp(r'^প্রশ্ন\s*'), '');
     htmlString = htmlString.replaceAll(RegExp(r'\s+'), ' ');
@@ -788,9 +805,23 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
 
   String _convertToSuperscript(String text) {
     const supMap = {
-      '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
-      '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
-      '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾', 'n': 'ⁿ', 'i': 'ⁱ'
+      '0': '⁰',
+      '1': '¹',
+      '2': '²',
+      '3': '³',
+      '4': '⁴',
+      '5': '⁵',
+      '6': '⁶',
+      '7': '⁷',
+      '8': '⁸',
+      '9': '⁹',
+      '+': '⁺',
+      '-': '⁻',
+      '=': '⁼',
+      '(': '⁽',
+      ')': '⁾',
+      'n': 'ⁿ',
+      'i': 'ⁱ',
     };
     return text.split('').map((c) => supMap[c] ?? c).join();
   }
@@ -904,7 +935,12 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
     );
   }
 
-  void _showResultDialog(int correctAnswers, double percentage, bool isPass, bool isAutoSubmit) {
+  void _showResultDialog(
+    int correctAnswers,
+    double percentage,
+    bool isPass,
+    bool isAutoSubmit,
+  ) {
     final timeSpent = _totalSeconds - _remainingSeconds;
     final timeSpentFormatted = _formatTime(timeSpent);
 
@@ -1024,10 +1060,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(color: Colors.grey[600], fontSize: 14),
-        ),
+        Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
         Text(
           value,
           style: const TextStyle(

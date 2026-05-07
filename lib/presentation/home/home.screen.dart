@@ -27,22 +27,16 @@ class HomeScreen extends GetView<HomeController> {
           children: [
             const TopBar(),
             const Divider(height: 1, color: kDivider),
-            // const PrimaryNavBar(),
 
             BannerSlider(),
-            // const Divider(height: 1, color: kDivider),
-            // const SecondaryNavBar(),
+
             const Divider(height: 1, color: kDivider),
             Expanded(
               child: const SingleChildScrollView(
                 padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // SectionHeader(),
-                    // SizedBox(height: 16),
-                    FeatureCardsGrid(),
-                  ],
+                  children: [FeatureCardsGrid()],
                 ),
               ),
             ),
@@ -70,11 +64,13 @@ class TopBar extends StatelessWidget {
         children: [
           const LogoSection(),
           const Spacer(),
-          Obx(() => UserProfileChip(
-            userName: controller.userName.value,
-            userInitials: controller.userInitials.value,
-            userXP: controller.userXP.value,
-          )),
+          Obx(
+            () => UserProfileChip(
+              userName: controller.userName.value,
+              userInitials: controller.userInitials.value,
+              userXP: controller.userXP.value,
+            ),
+          ),
         ],
       ),
     );

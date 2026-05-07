@@ -1,5 +1,5 @@
-
 import 'package:edupro/infrastructure/dal/model/quizModel.dart';
+import 'package:edupro/infrastructure/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -16,7 +16,8 @@ class BcsQuestion extends StatefulWidget {
   State<BcsQuestion> createState() => _BcsQuestionState();
 }
 
-class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin {
+class _BcsQuestionState extends State<BcsQuestion>
+    with TickerProviderStateMixin {
   final BcsController _controller = Get.find();
   final Map<String, dynamic> _localAnswers = {};
   late PageController _pageController;
@@ -33,7 +34,9 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
     _loadExistingAnswers();
     _updateProgress();
   }
@@ -41,7 +44,10 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
   void _loadExistingAnswers() {
     final String examId = widget.quizModel.examId ?? '';
     for (var question in widget.quizModel.quizList ?? []) {
-      final savedAnswer = _controller.getUserAnswer(examId, question.questionId ?? '');
+      final savedAnswer = _controller.getUserAnswer(
+        examId,
+        question.questionId ?? '',
+      );
       if (savedAnswer != null) {
         _localAnswers[question.questionId!] = savedAnswer;
       }
@@ -49,13 +55,10 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
   }
 
   void _updateProgress() {
-    _progressAnimation = Tween<double>(
-      begin: 0,
-      end: _answeredPercentage,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeInOut,
-    ));
+    _progressAnimation = Tween<double>(begin: 0, end: _answeredPercentage)
+        .animate(
+          CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
+        );
     _progressController.forward(from: 0);
   }
 
@@ -109,15 +112,12 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
     return AppBar(
       title: Text(
         widget.quizModel.examId ?? 'BCS Examination',
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
       ),
       centerTitle: true,
       elevation: 0,
-      backgroundColor: Colors.transparent,
-      foregroundColor: const Color(0xFF2C3E50),
+      backgroundColor: AppColors.appBarBackground,
+      foregroundColor: AppColors.appBarForeground,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_rounded),
         onPressed: () => _showExitConfirmation(),
@@ -141,7 +141,10 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4A90E2).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -156,7 +159,10 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.green.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -181,7 +187,9 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
                 return LinearProgressIndicator(
                   value: _progressAnimation.value,
                   backgroundColor: const Color(0xFFE8ECF0),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4A90E2)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    Color(0xFF4A90E2),
+                  ),
                   minHeight: 6,
                 );
               },
@@ -253,7 +261,7 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
                 ),
                 const SizedBox(height: 24),
                 ...options.asMap().entries.map(
-                      (entry) => _buildOption(
+                  (entry) => _buildOption(
                     entry.value,
                     data.questionId!,
                     entry.key + 1,
@@ -269,7 +277,13 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildOption(Option option, String questionId, int index, bool isCheckbox, dynamic selectedAnswer) {
+  Widget _buildOption(
+    Option option,
+    String questionId,
+    int index,
+    bool isCheckbox,
+    dynamic selectedAnswer,
+  ) {
     final isSelected = isCheckbox
         ? (selectedAnswer as List?)?.contains(option.optionId) ?? false
         : selectedAnswer == option.optionId;
@@ -277,7 +291,9 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF4A90E2).withOpacity(0.05) : Colors.transparent,
+        color: isSelected
+            ? const Color(0xFF4A90E2).withOpacity(0.05)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isSelected ? const Color(0xFF4A90E2) : const Color(0xFFE8ECF0),
@@ -286,36 +302,52 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
       ),
       child: isCheckbox
           ? CheckboxListTile(
-        title: Text(
-          _parseHtmlString(option.option?.toString() ?? ''),
-          style: TextStyle(
-            fontSize: 15,
-            height: 1.4,
-            color: isSelected ? const Color(0xFF4A90E2) : const Color(0xFF2C3E50),
-          ),
-        ),
-        value: isSelected,
-        onChanged: (value) => _onOptionSelected(questionId, option.optionId!, isCheckbox, value),
-        activeColor: const Color(0xFF4A90E2),
-        checkColor: Colors.white,
-        controlAffinity: ListTileControlAffinity.leading,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      )
+              title: Text(
+                _parseHtmlString(option.option?.toString() ?? ''),
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.4,
+                  color: isSelected
+                      ? const Color(0xFF4A90E2)
+                      : const Color(0xFF2C3E50),
+                ),
+              ),
+              value: isSelected,
+              onChanged: (value) => _onOptionSelected(
+                questionId,
+                option.optionId!,
+                isCheckbox,
+                value,
+              ),
+              activeColor: const Color(0xFF4A90E2),
+              checkColor: Colors.white,
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+            )
           : RadioListTile<String>(
-        title: Text(
-          _parseHtmlString(option.option?.toString() ?? ''),
-          style: TextStyle(
-            fontSize: 15,
-            height: 1.4,
-            color: isSelected ? const Color(0xFF4A90E2) : const Color(0xFF2C3E50),
-          ),
-        ),
-        value: option.optionId!,
-        groupValue: selectedAnswer,
-        onChanged: (value) => _onOptionSelected(questionId, value!, isCheckbox, true),
-        activeColor: const Color(0xFF4A90E2),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      ),
+              title: Text(
+                _parseHtmlString(option.option?.toString() ?? ''),
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.4,
+                  color: isSelected
+                      ? const Color(0xFF4A90E2)
+                      : const Color(0xFF2C3E50),
+                ),
+              ),
+              value: option.optionId!,
+              groupValue: selectedAnswer,
+              onChanged: (value) =>
+                  _onOptionSelected(questionId, value!, isCheckbox, true),
+              activeColor: const Color(0xFF4A90E2),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+            ),
     );
   }
 
@@ -343,10 +375,16 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
   //   // Auto-save to controller
   //   _controller.saveCurrentQuizAnswer(questionId, _localAnswers[questionId]);
   // }
-  void _onOptionSelected(String questionId, dynamic value, bool isCheckbox, bool? checked) {
+  void _onOptionSelected(
+    String questionId,
+    dynamic value,
+    bool isCheckbox,
+    bool? checked,
+  ) {
     final String examId = widget.quizModel.examId ?? '';
-    final QuizList currentQuestion = widget.quizModel.quizList!
-        .firstWhere((q) => q.questionId == questionId);
+    final QuizList currentQuestion = widget.quizModel.quizList!.firstWhere(
+      (q) => q.questionId == questionId,
+    );
 
     setState(() {
       if (isCheckbox) {
@@ -370,10 +408,10 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
 
     // Save to controller with examId
     _controller.saveCurrentQuizAnswer(
-        examId,
-        questionId,
-        _localAnswers[questionId],
-        currentQuestion
+      examId,
+      questionId,
+      _localAnswers[questionId],
+      currentQuestion,
     );
   }
 
@@ -396,7 +434,10 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
               label: const Text('Previous'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF4A90E2),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -419,7 +460,10 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4A90E2),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -458,9 +502,8 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
             style: ElevatedButton.styleFrom(
               // backgroundColor: isAllAnswered ? const Color(0xFF4A90E2) : const Color(0xFFE8ECF0),
               // foregroundColor: isAllAnswered ? Colors.white : Colors.grey,
-
-              backgroundColor:  const Color(0xFF4A90E2)  ,
-              foregroundColor:   Colors.white ,
+              backgroundColor: const Color(0xFF4A90E2),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -468,10 +511,7 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
             ),
             child: Text(
               isAllAnswered ? 'Submit Quiz' : 'Answer All Questions to Submit',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -501,7 +541,9 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
           }
         }
       } else {
-        if (selected != null && correctOptions != null && correctOptions.contains(selected)) {
+        if (selected != null &&
+            correctOptions != null &&
+            correctOptions.contains(selected)) {
           correctAnswers++;
         }
       }
@@ -514,10 +556,20 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
       _confettiController.play();
     }
 
-    await _showResultDialog(correctAnswers, totalQuestions, percentage, isPerfect);
+    await _showResultDialog(
+      correctAnswers,
+      totalQuestions,
+      percentage,
+      isPerfect,
+    );
   }
 
-  Future<void> _showResultDialog(int correct, int total, double percentage, bool isPerfect) async {
+  Future<void> _showResultDialog(
+    int correct,
+    int total,
+    double percentage,
+    bool isPerfect,
+  ) async {
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -562,12 +614,23 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
                   ),
                   child: Column(
                     children: [
-                      _buildResultRow('Correct Answers', '$correct', Colors.green),
+                      _buildResultRow(
+                        'Correct Answers',
+                        '$correct',
+                        Colors.green,
+                      ),
                       const SizedBox(height: 12),
-                      _buildResultRow('Incorrect Answers', '${total - correct}', Colors.red),
+                      _buildResultRow(
+                        'Incorrect Answers',
+                        '${total - correct}',
+                        Colors.red,
+                      ),
                       const SizedBox(height: 12),
-                      _buildResultRow('Score', '${percentage.toStringAsFixed(1)}%',
-                          percentage >= 60 ? Colors.green : Colors.orange),
+                      _buildResultRow(
+                        'Score',
+                        '${percentage.toStringAsFixed(1)}%',
+                        percentage >= 60 ? Colors.green : Colors.orange,
+                      ),
                     ],
                   ),
                 ),
@@ -629,10 +692,7 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF7F8C8D),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF7F8C8D)),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -710,11 +770,11 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Exit Quiz'),
-        content: const Text('Your progress will be saved. Are you sure you want to exit?'),
+        content: const Text(
+          'Your progress will be saved. Are you sure you want to exit?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -758,13 +818,13 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
               children: [
                 const Text(
                   'Question Navigator',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF4A90E2).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -794,8 +854,14 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
                 itemBuilder: (context, index) {
                   final question = widget.quizModel.quizList![index];
                   final questionId = question.questionId ?? '';
-                  final isAnswered = _controller.isQuestionAnswered(examId, questionId);
-                  final isCorrect = _controller.isAnswerCorrect(examId, questionId);
+                  final isAnswered = _controller.isQuestionAnswered(
+                    examId,
+                    questionId,
+                  );
+                  final isCorrect = _controller.isAnswerCorrect(
+                    examId,
+                    questionId,
+                  );
 
                   // Determine color based on answer status
                   Color backgroundColor;
@@ -809,7 +875,7 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
                     icon = null;
                   } else if (isCorrect == true) {
                     // Correct answer - Green
-                    backgroundColor =   Colors.green;
+                    backgroundColor = Colors.green;
                     textColor = Colors.white;
                     icon = Icons.check_circle;
                   } else {
@@ -894,10 +960,7 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: Color(0xFF7F8C8D),
-          ),
+          style: const TextStyle(fontSize: 11, color: Color(0xFF7F8C8D)),
         ),
       ],
     );
@@ -909,14 +972,22 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
     // Handle superscript
     htmlString = htmlString.replaceAllMapped(
       RegExp(r'<sup>(.*?)</sup>', caseSensitive: false),
-          (match) => _convertToSuperscript(match.group(1) ?? ''),
+      (match) => _convertToSuperscript(match.group(1) ?? ''),
     );
 
     // Handle HTML entities
     final entities = {
-      '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>',
-      '&quot;': '"', '&#39;': "'", '&rsquo;': "'", '&ldquo;': '"', '&rdquo;': '"',
-      '&mdash;': '—', '&ndash;': '–',
+      '&nbsp;': ' ',
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#39;': "'",
+      '&rsquo;': "'",
+      '&ldquo;': '"',
+      '&rdquo;': '"',
+      '&mdash;': '—',
+      '&ndash;': '–',
     };
 
     entities.forEach((entity, char) {
@@ -932,13 +1003,24 @@ class _BcsQuestionState extends State<BcsQuestion> with TickerProviderStateMixin
 
   String _convertToSuperscript(String text) {
     const supMap = {
-      '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
-      '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
-      '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾', 'n': 'ⁿ', 'i': 'ⁱ',
+      '0': '⁰',
+      '1': '¹',
+      '2': '²',
+      '3': '³',
+      '4': '⁴',
+      '5': '⁵',
+      '6': '⁶',
+      '7': '⁷',
+      '8': '⁸',
+      '9': '⁹',
+      '+': '⁺',
+      '-': '⁻',
+      '=': '⁼',
+      '(': '⁽',
+      ')': '⁾',
+      'n': 'ⁿ',
+      'i': 'ⁱ',
     };
     return text.split('').map((c) => supMap[c] ?? c).join();
   }
 }
-
-
-

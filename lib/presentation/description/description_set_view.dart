@@ -21,7 +21,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
       body: Obx(() {
         if (controller.questionSets.isEmpty && controller.isLoading.value) {
@@ -52,19 +52,16 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
         ),
       ),
       centerTitle: true,
-      backgroundColor: kCardBg,
+      backgroundColor: AppColors.appBarBackground,
       elevation: 0,
-      foregroundColor: Colors.black87,
+      foregroundColor: AppColors.appBarForeground,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new, size: 20),
         onPressed: () => Get.back(),
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1,
-          color: Colors.grey.shade200,
-        ),
+        child: Container(height: 1, color: AppColors.border),
       ),
     );
   }
@@ -75,8 +72,8 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
       itemCount: 3,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.grey.shade300,
-          highlightColor: Colors.grey.shade100,
+          baseColor: AppColors.shimmerBase,
+          highlightColor: AppColors.shimmerHighlight,
           child: Container(
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
@@ -109,13 +106,13 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
+                color: AppColors.errorLight.withOpacity(0.3),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.error_outline,
                 size: 60,
-                color: Colors.red.shade400,
+                color: AppColors.error,
               ),
             ),
             const SizedBox(height: 24),
@@ -124,17 +121,14 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -144,7 +138,10 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -166,13 +163,13 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: AppColors.warningLight.withOpacity(0.3),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.quiz_outlined,
                 size: 60,
-                color: Colors.orange.shade400,
+                color: AppColors.warning,
               ),
             ),
             const SizedBox(height: 24),
@@ -181,17 +178,14 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               'There are no question sets available for ${widget.title} at the moment.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -201,7 +195,10 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -217,7 +214,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
     final sets = controller.questionSets;
     final totalQuestions = sets.fold<int>(
       0,
-          (sum, set) => sum + (set.totalQuestions ?? 0),
+      (sum, set) => sum + (set.totalQuestions ?? 0),
     );
 
     return Column(
@@ -245,10 +242,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primary.withOpacity(0.8),
-          ],
+          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -267,21 +261,13 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
             label: 'Total Questions',
             value: totalQuestions.toString(),
           ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.white.withOpacity(0.3),
-          ),
+          Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
           _buildSummaryItem(
             icon: Icons.folder_special,
             label: 'Question Sets',
             value: setCount.toString(),
           ),
-          Container(
-            width: 1,
-            height: 40,
-            color: Colors.white.withOpacity(0.3),
-          ),
+          Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
           _buildSummaryItem(
             icon: Icons.timer,
             label: 'Est. Time',
@@ -312,10 +298,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.white.withOpacity(0.9),
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.9)),
         ),
       ],
     );
@@ -333,12 +316,9 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.grey.shade200,
-                width: 1,
-              ),
+              border: Border.all(color: AppColors.border, width: 1),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +408,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
                           Icon(
                             Icons.lightbulb_outline,
                             size: 18,
-                            color: Colors.blue.shade700,
+                            color: AppColors.primaryDark,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -436,7 +416,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
                               'Includes ${set.questions!.length} questions with detailed explanations',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.blue.shade700,
+                                color: AppColors.primaryDark,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -457,19 +437,19 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.grey.shade600),
+          Icon(icon, size: 14, color: AppColors.textSecondary),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey.shade600,
+              color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -481,7 +461,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
   // New screen for showing questions with explanations
   void _navigateToQuestionDetails(QuestionSet set, int setNumber) {
     Get.to(
-          () => QuestionDetailsScreen(
+      () => QuestionDetailsScreen(
         questionSet: set,
         setNumber: setNumber,
         subjectTitle: widget.title,
@@ -507,9 +487,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
   void _startQuiz(QuestionSet set) {
     Get.dialog(
       AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Ready to Start?'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -543,10 +521,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               Get.back();
@@ -569,9 +544,6 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
     );
   }
 }
-
-
-
 
 // Separate screen for showing questions with explanations
 class QuestionDetailsScreen extends StatefulWidget {
@@ -621,29 +593,23 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
     final questions = widget.questionSet.questions ?? [];
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: Text(
           widget.questionSet.setName ?? 'Question Set ${widget.setNumber}',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        backgroundColor: kCardBg,
+        backgroundColor: AppColors.appBarBackground,
         elevation: 0,
-        foregroundColor: Colors.black87,
+        foregroundColor: AppColors.appBarForeground,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Get.back(),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: Colors.grey.shade200,
-          ),
+          child: Container(height: 1, color: AppColors.surfaceVariant),
         ),
       ),
       body: Column(
@@ -661,7 +627,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                       'Question ${_selectedQuestionIndex + 1} of ${questions.length}',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey.shade600,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -688,7 +654,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                 const SizedBox(height: 12),
                 LinearProgressIndicator(
                   value: (_selectedQuestionIndex + 1) / questions.length,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: AppColors.surfaceVariant,
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                   // height: 4,
                   borderRadius: BorderRadius.circular(2),
@@ -698,7 +664,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
                     questions.length,
-                        (index) => Container(
+                    (index) => Container(
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       width: 8,
                       height: 8,
@@ -727,7 +693,9 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
               itemCount: questions.length,
               itemBuilder: (context, index) {
                 final question = questions[index];
-                final cleanedQuestionText = _cleanQuestionText(question.questionText);
+                final cleanedQuestionText = _cleanQuestionText(
+                  question.questionText,
+                );
 
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -742,7 +710,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.shade200,
+                              color: AppColors.surfaceVariant,
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -781,13 +749,14 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Question No: ${question.questionNo}',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey.shade500,
+                                          color: AppColors.textSecondary,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -801,10 +770,14 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                                           color: _getQuestionTypeColor(
                                             question.questionType,
                                           ).withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                         child: Text(
-                                          _getQuestionType(question.questionType),
+                                          _getQuestionType(
+                                            question.questionType,
+                                          ),
                                           style: TextStyle(
                                             fontSize: 11,
                                             color: _getQuestionTypeColor(
@@ -843,7 +816,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                       //     borderRadius: BorderRadius.circular(20),
                       //     boxShadow: [
                       //       BoxShadow(
-                      //         color: Colors.grey.shade200,
+                      //         color: AppColors.surfaceVariant,
                       //         blurRadius: 10,
                       //         offset: const Offset(0, 2),
                       //       ),
@@ -917,7 +890,6 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                       //     ],
                       //   ),
                       // ),
-
                       const SizedBox(height: 16),
 
                       // Explanation Section
@@ -928,7 +900,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.shade200,
+                              color: AppColors.surfaceVariant,
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -942,7 +914,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                                 Icon(
                                   Icons.lightbulb_outline,
                                   size: 22,
-                                  color: Colors.blue.shade700,
+                                  color: AppColors.primaryDark,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -950,14 +922,15 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade800,
+                                    color: AppColors.primaryDark,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              question.explanation ?? 'No explanation available for this question.',
+                              question.explanation ??
+                                  'No explanation available for this question.',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.blue.shade900,
@@ -1039,18 +1012,12 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
   void _showCompletionDialog() {
     Get.dialog(
       AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Great Job! 🎉'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.emoji_events,
-              size: 60,
-              color: Colors.amber,
-            ),
+            const Icon(Icons.emoji_events, size: 60, color: Colors.amber),
             const SizedBox(height: 16),
             Text(
               'You\'ve reviewed all ${widget.questionSet.questions?.length ?? 0} questions',
@@ -1061,10 +1028,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
             Text(
               'Set: ${widget.questionSet.setName}',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -1185,7 +1149,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
     final questions = widget.questionSet.questions ?? [];
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: Text(
           widget.questionSet.setName ?? 'Question Set ${widget.setNumber}',
@@ -1195,9 +1159,9 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: kCardBg,
+        backgroundColor: AppColors.appBarBackground,
         elevation: 0,
-        foregroundColor: Colors.black87,
+        foregroundColor: AppColors.appBarForeground,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => Get.back(),
@@ -1206,7 +1170,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
           preferredSize: const Size.fromHeight(1),
           child: Container(
             height: 1,
-            color: Colors.grey.shade200,
+            color: AppColors.surfaceVariant,
           ),
         ),
       ),
@@ -1225,7 +1189,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                       'Question ${_selectedQuestionIndex + 1} of ${questions.length}',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey.shade600,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -1252,7 +1216,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                 const SizedBox(height: 12),
                 LinearProgressIndicator(
                   value: (_selectedQuestionIndex + 1) / questions.length,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: AppColors.surfaceVariant,
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                   // height: 4,
                   borderRadius: BorderRadius.circular(2),
@@ -1304,7 +1268,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.shade200,
+                              color: AppColors.surfaceVariant,
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -1349,7 +1313,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                                         'Question No: ${question.questionNo}',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey.shade500,
+                                          color: AppColors.surface0,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -1406,7 +1370,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                       //     borderRadius: BorderRadius.circular(20),
                       //     boxShadow: [
                       //       BoxShadow(
-                      //         color: Colors.grey.shade200,
+                      //         color: AppColors.surfaceVariant,
                       //         blurRadius: 10,
                       //         offset: const Offset(0, 2),
                       //       ),
@@ -1491,7 +1455,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.shade200,
+                              color: AppColors.surfaceVariant,
                               blurRadius: 10,
                               offset: const Offset(0, 2),
                             ),
@@ -1505,7 +1469,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                                 Icon(
                                   Icons.lightbulb_outline,
                                   size: 22,
-                                  color: Colors.blue.shade700,
+                                  color: AppColors.primaryDark,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -1513,7 +1477,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade800,
+                                    color: AppColors.primaryDark,
                                   ),
                                 ),
                               ],
@@ -1626,7 +1590,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: AppColors.textSecondary,
               ),
             ),
           ],

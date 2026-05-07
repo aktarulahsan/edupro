@@ -1,4 +1,3 @@
-
 import 'package:edupro/infrastructure/dal/model/option_model.dart';
 
 class Question {
@@ -7,7 +6,7 @@ class Question {
   final String questionText;
   final String givenAns;
   final String correctAnswer;
-  final int questionType;
+  final int questionType; // 1: single choice, 2: multiple choice
   final String explanation;
   final List<OptionModel> optionList;
 
@@ -31,9 +30,10 @@ class Question {
       correctAnswer: json['correctAnswer'] ?? '',
       questionType: json['questionType'] ?? 0,
       explanation: json['explanation'] ?? '',
-      optionList: (json['optionList'] as List?)
-          ?.map((o) => OptionModel.fromJson(o))
-          .toList() ??
+      optionList:
+          (json['optionList'] as List?)
+              ?.map((o) => OptionModel.fromJson(o))
+              .toList() ??
           [],
     );
   }
