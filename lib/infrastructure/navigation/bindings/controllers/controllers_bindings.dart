@@ -4,5 +4,6 @@ export 'package:edupro/infrastructure/navigation/bindings/controllers/descriptio
 export 'package:edupro/infrastructure/navigation/bindings/controllers/home.controller.binding.dart'; 
 export 'package:edupro/infrastructure/navigation/bindings/controllers/mcq_practice.controller.binding.dart'; 
 export 'package:edupro/infrastructure/navigation/bindings/controllers/mock_exam.controller.binding.dart'; 
+export 'package:edupro/infrastructure/navigation/bindings/controllers/setting.controller.binding.dart'; 
 export 'package:edupro/infrastructure/navigation/bindings/controllers/splash.controller.binding.dart'; 
 export 'package:edupro/infrastructure/navigation/bindings/controllers/subjective.controller.binding.dart'; 

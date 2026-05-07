@@ -61,6 +61,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     final userId = await UserCache.getUesrId();
+    print("userId: $userId");
 
     if (userId != null) {
       Get.offAll(() => const HomeScreen(), binding: HomeControllerBinding());

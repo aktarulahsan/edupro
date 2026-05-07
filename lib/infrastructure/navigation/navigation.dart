@@ -66,5 +66,10 @@ class Nav {
       page: () => const DescriptionScreen(),
       binding: DescriptionControllerBinding(),
     ),
+    GetPage(
+      name: Routes.SETTING,
+      page: () => const SettingScreen(),
+      binding: SettingControllerBinding(),
+    ),
   ];
 }

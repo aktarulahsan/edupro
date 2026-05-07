@@ -31,6 +31,7 @@ class UserModel {
     this.lastName,
     this.referredBy,
     this.mobileNumber,
+    this.imageUrl,
     this.password,
     this.gender,
     this.occupation,
@@ -50,6 +51,7 @@ class UserModel {
   String? lastName;
   String? referredBy;
   String? mobileNumber;
+  String? imageUrl;
   String? password;
   String? gender;
   String? occupation;
@@ -71,6 +73,12 @@ class UserModel {
         lastName: json["last_name"]??json["lastname"],
         referredBy: json["referred_by"],
         mobileNumber: json["mobile_number"],
+        imageUrl: json["image_url"] ??
+            json["imageUrl"] ??
+            json["photo_url"] ??
+            json["photoUrl"] ??
+            json["avatar"] ??
+            json["image"],
         password: json["password"],
         gender: json["gender"],
         occupation: json["occupation"],
@@ -93,6 +101,7 @@ class UserModel {
         "last_name": lastName,
         "referred_by": referredBy,
         "mobile_number": mobileNumber,
+        "image_url": imageUrl,
         "password": password,
         "gender": gender,
         "occupation": occupation,

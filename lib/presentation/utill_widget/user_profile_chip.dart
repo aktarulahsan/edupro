@@ -1,7 +1,8 @@
-
 // User Profile Chip
+import 'package:edupro/infrastructure/navigation/routes.dart';
 import 'package:edupro/infrastructure/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class UserProfileChip extends StatelessWidget {
   final String userName;
@@ -38,33 +39,35 @@ class UserProfileChip extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                userName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: kTextDark,
-                ),
-              ),
-              Row(
-                children: const [
-                  Icon(Icons.emoji_events_rounded,
-                      size: 13, color: kPrimary),
-                  SizedBox(width: 3),
-                  Text(
-                    '2450 XP',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: kPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
+          InkWell(
+            onTap: () => Get.toNamed(Routes.SETTING),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  userName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: kTextDark,
                   ),
-                ],
-              ),
-            ],
+                ),
+                Row(
+                  children: const [
+                    Icon(Icons.emoji_events_rounded, size: 13, color: kPrimary),
+                    SizedBox(width: 3),
+                    Text(
+                      '2450 XP',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: kPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),
