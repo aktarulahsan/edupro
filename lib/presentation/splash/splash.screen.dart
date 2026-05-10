@@ -60,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // Widget এখনও mounted কিনা চেক করুন
     if (!mounted) return;
 
-    final userId = await UserCache.getUesrId();
+    final userId = UserCache.getUesrId();
     print("userId: $userId");
 
     if (userId != null) {

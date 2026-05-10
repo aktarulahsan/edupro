@@ -1,5 +1,3 @@
-
-
 import 'package:edupro/infrastructure/dal/daos/baseResponse.dart';
 import 'package:edupro/infrastructure/dal/daos/usersModel.dart';
 import 'package:edupro/infrastructure/dal/model/question_set.model.dart';
@@ -26,17 +24,6 @@ class DescriptionController extends GetxController {
     super.onInit();
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-
   Future<void> getGroupList() async {
     try {
       isLoading.value = true;
@@ -52,16 +39,14 @@ class DescriptionController extends GetxController {
       final response = await AppApiProvider.instance.get(requestPayload);
 
       response.fold(
-            (error) {
+        (error) {
           errorMessage.value = _getErrorMessage(error);
-
         },
-            (success) {
+        (success) {
           try {
             final res = BaseResponse.fromJson(success.data);
             if (res.data != null && res.data is List) {
               subjectList.value = List<String>.from(res.data);
-
             } else {
               subjectList.clear();
               errorMessage.value = 'Invalid data format received';
@@ -93,23 +78,26 @@ class DescriptionController extends GetxController {
       // selectedSubject.value = subject;
 
       final options = UserCache.getOption();
-      print("${ApiEndPoints.quizModule.subjectWiseQuestions}?subjectGroup=$subject");
+      print(
+        "${ApiEndPoints.quizModule.subjectWiseQuestions}?subjectGroup=$subject",
+      );
       final requestPayload = APIRequestParam(
-        path: '${ApiEndPoints.quizModule.subjectWiseQuestions}?subjectGroup=$subject',
+        path:
+            '${ApiEndPoints.quizModule.subjectWiseQuestions}?subjectGroup=$subject',
         options: options,
       );
 
       final response = await AppApiProvider.instance.get(requestPayload);
 
       response.fold(
-            (error) {
+        (error) {
           hideLoader();
           errorMessage.value = _getErrorMessage(error);
           // if (kDebugMode) {
           //   print('Error in getSubjectWiseQuestions: $error');
           // }
         },
-            (success) {
+        (success) {
           try {
             final res = SubjectWiseResponse.fromJson(success.data);
             hideLoader();
@@ -117,39 +105,27 @@ class DescriptionController extends GetxController {
               questionSets.value = res.items;
 
               Get.to(
-                    () => DescriptionSetView(title: subject,),
+                () => DescriptionSetView(title: subject),
                 transition: Transition.rightToLeft,
                 duration: const Duration(milliseconds: 300),
               );
-
-
-            } else {
-
-            }
+            } else {}
           } catch (e) {
             hideLoader();
             errorMessage.value = 'Failed to parse questions data';
-
           }
         },
       );
     } catch (e) {
       errorMessage.value = _getErrorMessage(e);
-
     } finally {
       // isQuestionsLoading.value = false;
     }
   }
-
-
-
-
 
   String _getErrorMessage(dynamic error) {
     if (error is String) return error;
     if (error is Exception) return error.toString();
     return 'An unexpected error occurred. Please try again.';
   }
-
-
 }

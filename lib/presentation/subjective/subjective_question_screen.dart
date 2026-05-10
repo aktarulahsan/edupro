@@ -418,7 +418,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
                 children: [
                   const Text('Green: Answered'),
                   Text(
-                    '${answeredQuestions}/$totalQuestions Completed',
+                    '$answeredQuestions/$totalQuestions Completed',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -626,7 +626,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
       ),
       child: CheckboxListTile(
         title: Text(
-          _parseHtmlString(item.option?.toString() ?? ''),
+          _parseHtmlString(item.option.toString() ?? ''),
           style: TextStyle(
             fontSize: 14,
             color: isChecked ? Colors.blue.shade700 : Colors.grey[800],
@@ -680,7 +680,7 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
       ),
       child: RadioListTile<int>(
         title: Text(
-          _parseHtmlString(item.option?.toString() ?? ''),
+          _parseHtmlString(item.option.toString() ?? ''),
           style: TextStyle(
             fontSize: 14,
             color: isSelected ? Colors.blue.shade700 : Colors.grey[800],
@@ -858,8 +858,8 @@ class _SubjectiveQuestionScreenState extends State<SubjectiveQuestionScreen> {
         var selectedOptionIndices = _selectedOptions[i];
 
         final correctOptionIndices = <int>[];
-        for (int j = 0; j < question.optionList!.length; j++) {
-          if (question.optionList![j].correct == true) {
+        for (int j = 0; j < question.optionList.length; j++) {
+          if (question.optionList[j].correct == true) {
             correctOptionIndices.add(j);
           }
         }

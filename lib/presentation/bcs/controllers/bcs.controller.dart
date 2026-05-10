@@ -30,8 +30,10 @@ class BcsController extends GetxController {
   final result = Result().obs;
 
   // Store answers per examId
-  final Map<String, Map<String, dynamic>> examAnswers = <String, Map<String, dynamic>>{}.obs;
-  final Map<String, Map<String, bool>> examCorrectness = <String, Map<String, bool>>{}.obs;
+  final Map<String, Map<String, dynamic>> examAnswers =
+      <String, Map<String, dynamic>>{}.obs;
+  final Map<String, Map<String, bool>> examCorrectness =
+      <String, Map<String, bool>>{}.obs;
 
   // Current active quiz
   final currentQuiz = Rxn<QuizModel>();
@@ -49,7 +51,7 @@ class BcsController extends GetxController {
 
   // Performance optimization
   bool _isFetching = false;
-  bool _initialLoadDone = false;
+  final bool _initialLoadDone = false;
 
   @override
   void onInit() {
@@ -149,7 +151,10 @@ class BcsController extends GetxController {
     }
   }
 
-  Future<void> getQuizList({bool refresh = false, bool isBackground = false}) async {
+  Future<void> getQuizList({
+    bool refresh = false,
+    bool isBackground = false,
+  }) async {
     if (_isFetching) return;
     _isFetching = true;
 
@@ -169,15 +174,19 @@ class BcsController extends GetxController {
         options: options,
       );
 
-      final response = await AppApiProvider.instance.get(requestPayload).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Connection timeout. Please check your internet.');
-        },
-      );
+      final response = await AppApiProvider.instance
+          .get(requestPayload)
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception(
+                'Connection timeout. Please check your internet.',
+              );
+            },
+          );
 
       response.fold(
-            (error) {
+        (error) {
           if (!isBackground) {
             errorMessage.value = _getErrorMessage(error);
           }
@@ -185,14 +194,14 @@ class BcsController extends GetxController {
           isUpdating.value = false;
           _isFetching = false;
         },
-            (success) async {
+        (success) async {
           try {
             final baseResponse = BaseResponse.fromJson(success.data);
 
-            List<QuizModel> parsedQuizzes = await compute(_parseQuizzesInBackground, {
-              'data': baseResponse.data,
-              'refresh': refresh,
-            });
+            List<QuizModel> parsedQuizzes = await compute(
+              _parseQuizzesInBackground,
+              {'data': baseResponse.data, 'refresh': refresh},
+            );
 
             // Update UI with new data
             quizList.value = parsedQuizzes;
@@ -228,7 +237,9 @@ class BcsController extends GetxController {
     }
   }
 
-  static List<QuizModel> _parseQuizzesInBackground(Map<String, dynamic> params) {
+  static List<QuizModel> _parseQuizzesInBackground(
+    Map<String, dynamic> params,
+  ) {
     final data = params['data'];
     List<QuizModel> parsedQuizzes = [];
 
@@ -268,7 +279,8 @@ class BcsController extends GetxController {
 
   String _getErrorMessage(dynamic error) {
     if (error is String) return error;
-    if (error is Exception) return error.toString().replaceAll('Exception:', '').trim();
+    if (error is Exception)
+      return error.toString().replaceAll('Exception:', '').trim();
     return 'An unexpected error occurred';
   }
 
@@ -280,7 +292,10 @@ class BcsController extends GetxController {
       };
       final jsonData = json.encode(cacheData);
       await _storage.write(_cacheKey, jsonData);
-      await _storage.write(_cacheTimestampKey, DateTime.now().millisecondsSinceEpoch);
+      await _storage.write(
+        _cacheTimestampKey,
+        DateTime.now().millisecondsSinceEpoch,
+      );
     } catch (e) {
       debugPrint('Cache save error: $e');
     }
@@ -295,11 +310,18 @@ class BcsController extends GetxController {
       currentQuizAnswers.clear();
       currentQuizCorrectness.clear();
     }
-    debugPrint('Loaded answers for exam $examId: ${currentQuizAnswers.length} answers');
+    debugPrint(
+      'Loaded answers for exam $examId: ${currentQuizAnswers.length} answers',
+    );
   }
 
   // Save answer for current exam
-  void saveCurrentQuizAnswer(String examId, String questionId, dynamic answer, QuizList question) {
+  void saveCurrentQuizAnswer(
+    String examId,
+    String questionId,
+    dynamic answer,
+    QuizList question,
+  ) {
     // Save answer
     currentQuizAnswers[questionId] = answer;
     examAnswers[examId] = Map.from(currentQuizAnswers);
@@ -312,7 +334,9 @@ class BcsController extends GetxController {
     // Save to cache
     _saveAnswersToCache();
 
-    debugPrint('Saved answer for exam $examId, question $questionId: $answer, Correct: $isCorrect');
+    debugPrint(
+      'Saved answer for exam $examId, question $questionId: $answer, Correct: $isCorrect',
+    );
   }
 
   bool _checkIfAnswerCorrect(QuizList question, dynamic answer) {
@@ -384,7 +408,8 @@ class BcsController extends GetxController {
   int getTotalCorrectAcrossAllExams() {
     int total = 0;
     for (var examId in examCorrectness.keys) {
-      total += examCorrectness[examId]?.values.where((v) => v == true).length ?? 0;
+      total +=
+          examCorrectness[examId]?.values.where((v) => v == true).length ?? 0;
     }
     return total;
   }

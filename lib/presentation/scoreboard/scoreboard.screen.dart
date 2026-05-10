@@ -208,7 +208,7 @@ class ScoreboardScreen extends GetView<ScoreboardController> {
               Expanded(
                 child: Column(
                   children: [
-                    Container(
+                    SizedBox(
                       height: 80,
                       width: 80,
                       child: Stack(
@@ -434,7 +434,7 @@ class _StatCard extends StatelessWidget {
                   ),
                   child: Icon(icon, color: Colors.white, size: 20),
                 ),
-                SizedBox(width: 20,),
+                SizedBox(width: 20),
                 Text(
                   value,
                   style: const TextStyle(
@@ -449,7 +449,6 @@ class _StatCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Text(
                   title,
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),

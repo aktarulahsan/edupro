@@ -480,7 +480,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
                       const Icon(Icons.check_circle, size: 22),
                       const SizedBox(width: 10),
                       Text(
-                        'Submit Quiz (${answeredQuestions}/$totalQuestions)',
+                        'Submit Quiz ($answeredQuestions/$totalQuestions)',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

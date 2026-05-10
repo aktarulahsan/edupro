@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 class BannerItem {
@@ -14,6 +12,4 @@ class BannerItem {
     required this.color,
     required this.icon,
   });
-
-
 }

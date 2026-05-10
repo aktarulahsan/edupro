@@ -40,7 +40,6 @@ class Result {
     grade: json['grade'] ?? 'N/A',
     feedback: json['feedback'] ?? '',
     isPassed: json['isPassed'] ?? false,
-
   );
 
   Map<String, dynamic> toJson() => {
@@ -57,12 +56,11 @@ class Result {
     'timestamp': DateTime.now().toIso8601String(),
   };
 
-  setCount(count){
+  void setCount(count) {
     this.count = count;
   }
-  int? getCount(){
+
+  int? getCount() {
     return count!;
   }
-
 }
-

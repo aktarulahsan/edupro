@@ -394,7 +394,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
                     ),
                   ],
                 ),
-                if (set.questions != null && set.questions!.isNotEmpty)
+                if (set.questions.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: Container(
@@ -413,7 +413,7 @@ class _DescriptionSetViewState extends State<DescriptionSetView> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Includes ${set.questions!.length} questions with detailed explanations',
+                              'Includes ${set.questions.length} questions with detailed explanations',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.primaryDark,
@@ -1020,7 +1020,7 @@ class _QuestionDetailsScreenState extends State<QuestionDetailsScreen> {
             const Icon(Icons.emoji_events, size: 60, color: Colors.amber),
             const SizedBox(height: 16),
             Text(
-              'You\'ve reviewed all ${widget.questionSet.questions?.length ?? 0} questions',
+              'You\'ve reviewed all ${widget.questionSet.questions.length ?? 0} questions',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),

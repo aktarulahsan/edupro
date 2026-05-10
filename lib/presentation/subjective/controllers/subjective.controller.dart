@@ -1,6 +1,5 @@
 import 'package:edupro/infrastructure/dal/daos/baseResponse.dart';
 import 'package:edupro/infrastructure/dal/daos/usersModel.dart';
-import 'package:edupro/infrastructure/dal/model/question.dart';
 import 'package:edupro/infrastructure/dal/model/question_set.model.dart';
 import 'package:edupro/infrastructure/dal/model/subject_wise_response.dart';
 import 'package:edupro/infrastructure/service/apiService.dart';
@@ -9,10 +8,8 @@ import 'package:edupro/presentation/subjective/subjective_set_vew.dart';
 import 'package:edupro/utils/loader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
 // Models for Question Data
-
 
 class SubjectiveController extends GetxController {
   final isLoading = false.obs;
@@ -44,13 +41,13 @@ class SubjectiveController extends GetxController {
       final response = await AppApiProvider.instance.get(requestPayload);
 
       response.fold(
-            (error) {
+        (error) {
           errorMessage.value = _getErrorMessage(error);
           if (kDebugMode) {
             print('Error in getQuizList: $error');
           }
         },
-            (success) {
+        (success) {
           try {
             final res = BaseResponse.fromJson(success.data);
             if (res.data != null && res.data is List) {
@@ -89,23 +86,26 @@ class SubjectiveController extends GetxController {
       selectedSubject.value = subject;
 
       final options = UserCache.getOption();
-      print("${ApiEndPoints.quizModule.subjectWiseQuestions}?subjectGroup=$subject");
+      print(
+        "${ApiEndPoints.quizModule.subjectWiseQuestions}?subjectGroup=$subject",
+      );
       final requestPayload = APIRequestParam(
-        path: '${ApiEndPoints.quizModule.subjectWiseQuestions}?subjectGroup=$subject',
+        path:
+            '${ApiEndPoints.quizModule.subjectWiseQuestions}?subjectGroup=$subject',
         options: options,
       );
 
       final response = await AppApiProvider.instance.get(requestPayload);
 
       response.fold(
-            (error) {
-              hideLoader();
+        (error) {
+          hideLoader();
           errorMessage.value = _getErrorMessage(error);
           if (kDebugMode) {
             print('Error in getSubjectWiseQuestions: $error');
           }
         },
-            (success) {
+        (success) {
           try {
             final res = SubjectWiseResponse.fromJson(success.data);
             hideLoader();
@@ -113,11 +113,10 @@ class SubjectiveController extends GetxController {
               questionSets.value = res.items;
 
               Get.to(
-                    () => SubjectiveSetVew(title: subject,),
+                () => SubjectiveSetVew(title: subject),
                 transition: Transition.rightToLeft,
                 duration: const Duration(milliseconds: 300),
               );
-
 
               // if (kDebugMode) {
               //   print('Successfully loaded ${res.items.length} question sets for $subject');
@@ -156,17 +155,18 @@ class SubjectiveController extends GetxController {
 
       final options = UserCache.getOption();
       final requestPayload = APIRequestParam(
-        path: '${ApiEndPoints.quizModule.subjectWiseQuestions}/$subject/set/$setNo',
+        path:
+            '${ApiEndPoints.quizModule.subjectWiseQuestions}/$subject/set/$setNo',
         options: options,
       );
 
       final response = await AppApiProvider.instance.get(requestPayload);
 
       response.fold(
-            (error) {
+        (error) {
           errorMessage.value = _getErrorMessage(error);
         },
-            (success) {
+        (success) {
           try {
             final res = SubjectWiseResponse.fromJson(success.data);
             if (res.success && res.items.isNotEmpty) {
