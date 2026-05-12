@@ -8,6 +8,7 @@ import 'package:edupro/infrastructure/dal/model/submit_quiz_request.dart';
 import 'package:edupro/infrastructure/dal/model/submit_quiz_response.dart';
 import 'package:edupro/infrastructure/service/apiService.dart';
 import 'package:edupro/infrastructure/service/api_endpoint.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -20,21 +21,66 @@ class MockExamController extends GetxController {
   final selectedExam = Rxn<QuizModel>();
 
   final GetStorage _storage = GetStorage();
+  static const String _examCacheKey = 'mock_exam_cache';
+  static const String _examCacheTimestampKey = 'mock_exam_cache_timestamp';
   static const String _attemptCacheKey = 'mock_exam_attempts';
+  static const String _answersCacheKey = 'mock_exam_answers_cache';
+  static const Duration _cacheExpiry = Duration(hours: 12);
 
   final attempts = <String, MockExamAttempt>{}.obs;
+  final examAnswers = <String, Map<String, dynamic>>{}.obs;
+  final examCorrectness = <String, Map<String, bool>>{}.obs;
+  final currentExamAnswers = <String, dynamic>{}.obs;
+  final currentExamCorrectness = <String, bool>{}.obs;
+  bool _isFetching = false;
+
+  static final RegExp _questionPrefixBanglaRegex = RegExp(
+    r'^প্রশ্ন\s+[\d০-৯]+\.\s*',
+  );
+  static final RegExp _questionPrefixNumberWithSpaceRegex = RegExp(
+    r'^\d+\.\s+',
+  );
+  static final RegExp _questionPrefixNumberRegex = RegExp(r'^\d+\.');
+  static final RegExp _supRegex = RegExp(
+    r'<sup>(.*?)</sup>',
+    caseSensitive: false,
+  );
+  static final RegExp _htmlTagRegex = RegExp(r'<[^>]*>');
+  static final RegExp _whitespaceRegex = RegExp(r'\s+');
 
   @override
   void onInit() {
     super.onInit();
-    _loadCachedAttempts();
-    getMockExams();
+    _initializeData();
   }
 
-  Future<void> getMockExams() async {
+  Future<void> _initializeData() async {
+    _loadCachedAttempts();
+    await _loadCachedAnswers();
+    await _loadCachedExams();
+    await getMockExams(isBackground: mockExams.isNotEmpty);
+  }
+
+  Future<void> getMockExams({
+    bool forceRefresh = false,
+    bool isBackground = false,
+  }) async {
+    if (_isFetching) return;
+    _isFetching = true;
+
     try {
-      isLoading.value = true;
+      if (!isBackground) {
+        isLoading.value = true;
+      }
       errorMessage.value = '';
+
+      if (!forceRefresh && mockExams.isEmpty) {
+        await _loadCachedExams();
+        isBackground = mockExams.isNotEmpty;
+        if (isBackground) {
+          isLoading.value = false;
+        }
+      }
 
       final requestPayload = APIRequestParam(
         path: ApiEndPoints.quizModule.getQuizList,
@@ -43,30 +89,38 @@ class MockExamController extends GetxController {
 
       final response = await AppApiProvider.instance.get(requestPayload);
 
-      response.fold(
-        (error) {
+      await response.fold<Future<void>>(
+        (error) async {
           errorMessage.value = _cleanError(error);
           isLoading.value = false;
+          _isFetching = false;
         },
-        (success) {
+        (success) async {
           try {
             final baseResponse = BaseResponse.fromJson(success.data);
-            mockExams.value = _parseQuizModels(
+            final parsedExams = await compute(
+              _parseQuizModelsInBackground,
               baseResponse.items ?? baseResponse.data ?? baseResponse.obj,
             );
-            if (mockExams.isEmpty) {
+            mockExams.assignAll(parsedExams);
+            if (parsedExams.isNotEmpty) {
+              await _saveExamsToCache(parsedExams);
+            } else {
               errorMessage.value = 'No mock exams are available right now.';
             }
           } catch (e) {
+            debugPrint('Mock exam parse error: $e');
             errorMessage.value = 'Unable to read mock exam data.';
           } finally {
             isLoading.value = false;
+            _isFetching = false;
           }
         },
       );
     } catch (e) {
       errorMessage.value = _cleanError(e);
       isLoading.value = false;
+      _isFetching = false;
     }
   }
 
@@ -138,9 +192,9 @@ class MockExamController extends GetxController {
       );
       saveAttempt(
         examId: exam.examId ?? exam.hashCode.toString(),
-        score: submitResponse?.correctAnswers ?? localResult.correctAnswers,
-        totalQuestions: submitResponse?.totalQuestions ?? localResult.total,
-        percentage: submitResponse?.percentage ?? localResult.percentage,
+        score: localResult.correctAnswers,
+        totalQuestions: localResult.total,
+        percentage: localResult.percentage,
         timeSpent: totalTimeSpent,
       );
 
@@ -198,19 +252,15 @@ class MockExamController extends GetxController {
     required Map<int, dynamic> selectedOptions,
   }) {
     var correct = 0;
+    var answered = 0;
 
     for (var i = 0; i < questions.length; i++) {
-      final options = questions[i].optionList ?? [];
-      final selectedIndices = _toSelectedIndices(selectedOptions[i])..sort();
-      final correctIndices = <int>[];
+      final question = questions[i];
+      final selectedIndices = _toSelectedIndices(selectedOptions[i]);
+      if (selectedIndices.isEmpty) continue;
 
-      for (var j = 0; j < options.length; j++) {
-        if (options[j].correct == true) correctIndices.add(j);
-      }
-      correctIndices.sort();
-
-      if (selectedIndices.isNotEmpty &&
-          const ListEquality().equals(selectedIndices, correctIndices)) {
+      answered++;
+      if (_checkIfAnswerCorrect(question, selectedIndices)) {
         correct++;
       }
     }
@@ -218,9 +268,82 @@ class MockExamController extends GetxController {
     final total = questions.length;
     return MockExamLocalResult(
       correctAnswers: correct,
+      answeredQuestions: answered,
+      incorrectAnswers: answered - correct,
       total: total,
       percentage: total == 0 ? 0 : (correct / total) * 100,
     );
+  }
+
+  void loadExamAnswers(String examId, List<QuizList> questions) {
+    final storedAnswers = examAnswers[examId];
+    if (storedAnswers == null) {
+      currentExamAnswers.clear();
+      currentExamCorrectness.clear();
+      return;
+    }
+
+    currentExamAnswers.assignAll(storedAnswers);
+    currentExamCorrectness.assignAll(examCorrectness[examId] ?? {});
+  }
+
+  Map<int, dynamic> getSelectedOptionsForExam(
+    String examId,
+    List<QuizList> questions,
+  ) {
+    final storedAnswers = examAnswers[examId] ?? currentExamAnswers;
+    final selectedOptions = <int, dynamic>{};
+
+    for (var i = 0; i < questions.length; i++) {
+      final questionId = _questionKey(questions[i], i);
+      final answer = storedAnswers[questionId];
+      if (answer == null) continue;
+      selectedOptions[i] = _normalizeStoredAnswer(questions[i], answer);
+    }
+
+    return selectedOptions;
+  }
+
+  void saveCurrentExamAnswer({
+    required String examId,
+    required int questionIndex,
+    required QuizList question,
+    required dynamic answer,
+  }) {
+    final questionId = _questionKey(question, questionIndex);
+    final normalizedAnswer = _normalizeAnswerForQuestion(question, answer);
+
+    if (_isEmptyAnswer(normalizedAnswer)) {
+      currentExamAnswers.remove(questionId);
+      currentExamCorrectness.remove(questionId);
+    } else {
+      currentExamAnswers[questionId] = normalizedAnswer;
+      currentExamCorrectness[questionId] = _checkIfAnswerCorrect(
+        question,
+        normalizedAnswer,
+      );
+    }
+
+    examAnswers[examId] = Map<String, dynamic>.from(currentExamAnswers);
+    examCorrectness[examId] = Map<String, bool>.from(currentExamCorrectness);
+    _saveAnswersToCache();
+  }
+
+  bool isQuestionAnswered(String examId, QuizList question, int questionIndex) {
+    return examAnswers[examId]?.containsKey(
+          _questionKey(question, questionIndex),
+        ) ??
+        false;
+  }
+
+  int getExamAnsweredCount(String examId) => examAnswers[examId]?.length ?? 0;
+
+  void clearExamAnswers(String examId) {
+    examAnswers.remove(examId);
+    examCorrectness.remove(examId);
+    currentExamAnswers.clear();
+    currentExamCorrectness.clear();
+    _saveAnswersToCache();
   }
 
   int getDurationSeconds(QuizModel exam) {
@@ -279,20 +402,68 @@ class MockExamController extends GetxController {
         : '${minutes}m ${remainingSeconds}s';
   }
 
-  String cleanQuestionText(String text) {
-    if (text.isEmpty) return '';
-    var cleaned = text;
-    cleaned = cleaned.replaceFirst(RegExp(r'^প্রশ্ন\s+[\d০-৯]+\.\s*'), '');
-    cleaned = cleaned.replaceFirst(RegExp(r'^\d+\.\s+'), '');
-    cleaned = cleaned.replaceFirst(RegExp(r'^\d+\.'), '');
-    return cleanHtmlTags(cleaned.trimLeft());
+  String cleanQuestionText(String text) => _cleanQuestionTextStatic(text);
+
+  String cleanHtmlTags(String htmlString) => _cleanHtmlTagsStatic(htmlString);
+
+  static List<QuizModel> _parseQuizModelsInBackground(dynamic data) {
+    if (data == null) return [];
+    dynamic parsed = data;
+    if (data is String) parsed = json.decode(data);
+
+    if (parsed is Map<String, dynamic>) {
+      return [
+        _normalizeQuizModel(QuizModel.fromJson(parsed)),
+      ].where((exam) => (exam.quizList ?? []).isNotEmpty).toList();
+    }
+    if (parsed is Map) {
+      return [
+        _normalizeQuizModel(QuizModel.fromJson(parsed.cast<String, dynamic>())),
+      ].where((exam) => (exam.quizList ?? []).isNotEmpty).toList();
+    }
+    if (parsed is List) {
+      return parsed
+          .whereType<Map>()
+          .map((item) => QuizModel.fromJson(item.cast<String, dynamic>()))
+          .map(_normalizeQuizModel)
+          .where((exam) => (exam.quizList ?? []).isNotEmpty)
+          .toList();
+    }
+    return [];
   }
 
-  String cleanHtmlTags(String htmlString) {
+  static QuizModel _normalizeQuizModel(QuizModel exam) {
+    exam.examText = _cleanHtmlTagsStatic(exam.examText ?? '');
+
+    for (final question in exam.quizList ?? <QuizList>[]) {
+      question.questionText = _cleanQuestionTextStatic(
+        question.questionText ?? '',
+      );
+      question.explanation = _cleanHtmlTagsStatic(question.explanation ?? '');
+
+      for (final option in question.optionList ?? <Option>[]) {
+        option.option = _cleanHtmlTagsStatic(option.option ?? '');
+        option.answer = _cleanHtmlTagsStatic(option.answer ?? '');
+      }
+    }
+
+    return exam;
+  }
+
+  static String _cleanQuestionTextStatic(String text) {
+    if (text.isEmpty) return '';
+    var cleaned = text;
+    cleaned = cleaned.replaceFirst(_questionPrefixBanglaRegex, '');
+    cleaned = cleaned.replaceFirst(_questionPrefixNumberWithSpaceRegex, '');
+    cleaned = cleaned.replaceFirst(_questionPrefixNumberRegex, '');
+    return _cleanHtmlTagsStatic(cleaned.trimLeft());
+  }
+
+  static String _cleanHtmlTagsStatic(String htmlString) {
     if (htmlString.isEmpty) return '';
     var text = htmlString.replaceAllMapped(
-      RegExp(r'<sup>(.*?)</sup>', caseSensitive: false),
-      (match) => _convertToSuperscript(match.group(1) ?? ''),
+      _supRegex,
+      (match) => _convertToSuperscriptStatic(match.group(1) ?? ''),
     );
 
     const replacements = {
@@ -312,30 +483,9 @@ class MockExamController extends GetxController {
     });
 
     return text
-        .replaceAll(RegExp(r'<[^>]*>'), '')
-        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAll(_htmlTagRegex, '')
+        .replaceAll(_whitespaceRegex, ' ')
         .trim();
-  }
-
-  List<QuizModel> _parseQuizModels(dynamic data) {
-    if (data == null) return [];
-    dynamic parsed = data;
-    if (data is String) parsed = json.decode(data);
-
-    if (parsed is Map<String, dynamic>) {
-      return [QuizModel.fromJson(parsed)];
-    }
-    if (parsed is Map) {
-      return [QuizModel.fromJson(parsed.cast<String, dynamic>())];
-    }
-    if (parsed is List) {
-      return parsed
-          .whereType<Map>()
-          .map((item) => QuizModel.fromJson(item.cast<String, dynamic>()))
-          .where((exam) => (exam.quizList ?? []).isNotEmpty)
-          .toList();
-    }
-    return [];
   }
 
   List<int> _toSelectedIndices(dynamic selected) {
@@ -344,6 +494,61 @@ class MockExamController extends GetxController {
     if (selected is List<int>) return List<int>.from(selected);
     if (selected is List) return selected.whereType<int>().toList();
     return [];
+  }
+
+  String _questionKey(QuizList question, int index) {
+    final questionId = question.questionId?.trim();
+    if (questionId != null && questionId.isNotEmpty) return questionId;
+
+    final questionNo = question.questionNo;
+    if (questionNo != null) return questionNo.toString();
+
+    return index.toString();
+  }
+
+  dynamic _normalizeStoredAnswer(QuizList question, dynamic answer) {
+    if (question.questionType == 2) {
+      return _toSelectedIndices(answer)..sort();
+    }
+
+    final indices = _toSelectedIndices(answer);
+    return indices.isEmpty ? null : indices.first;
+  }
+
+  dynamic _normalizeAnswerForQuestion(QuizList question, dynamic answer) {
+    if (question.questionType == 2) {
+      final indices = _toSelectedIndices(answer).toSet().toList()..sort();
+      return indices;
+    }
+
+    if (answer is int) return answer;
+    final indices = _toSelectedIndices(answer);
+    return indices.isEmpty ? null : indices.first;
+  }
+
+  bool _isEmptyAnswer(dynamic answer) {
+    if (answer == null) return true;
+    if (answer is List) return answer.isEmpty;
+    return false;
+  }
+
+  bool _checkIfAnswerCorrect(QuizList question, dynamic answer) {
+    final options = question.optionList ?? [];
+    final selectedIndices = _toSelectedIndices(answer)..sort();
+    final correctIndices = <int>[];
+
+    for (var i = 0; i < options.length; i++) {
+      if (options[i].correct == true) correctIndices.add(i);
+    }
+    correctIndices.sort();
+
+    if (question.questionType == 2) {
+      return selectedIndices.isNotEmpty &&
+          const ListEquality().equals(selectedIndices, correctIndices);
+    }
+
+    return selectedIndices.length == 1 &&
+        correctIndices.contains(selectedIndices.first);
   }
 
   void _loadCachedAttempts() {
@@ -367,11 +572,112 @@ class MockExamController extends GetxController {
     }
   }
 
+  Future<void> _loadCachedAnswers() async {
+    final cached = _storage.read<String>(_answersCacheKey);
+    if (cached == null || cached.isEmpty) return;
+
+    try {
+      final decoded = json.decode(cached);
+      if (decoded is! Map) return;
+
+      final answers = decoded['examAnswers'];
+      if (answers is Map) {
+        examAnswers.assignAll(
+          answers.map(
+            (examId, answersByQuestion) => MapEntry(
+              examId.toString(),
+              Map<String, dynamic>.from(answersByQuestion as Map),
+            ),
+          ),
+        );
+      }
+
+      final correctness = decoded['examCorrectness'];
+      if (correctness is Map) {
+        examCorrectness.assignAll(
+          correctness.map(
+            (examId, correctnessByQuestion) => MapEntry(
+              examId.toString(),
+              Map<String, bool>.from(correctnessByQuestion as Map),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Mock exam answers cache load error: $e');
+      examAnswers.clear();
+      examCorrectness.clear();
+    }
+  }
+
+  Future<void> _loadCachedExams() async {
+    final cached = _storage.read<String>(_examCacheKey);
+    if (cached == null || cached.isEmpty) return;
+
+    try {
+      final decoded = json.decode(cached);
+      if (decoded is! Map) return;
+
+      final timestamp = decoded['timestamp'] is int
+          ? decoded['timestamp'] as int
+          : int.tryParse(decoded['timestamp']?.toString() ?? '');
+      if (timestamp != null) {
+        final cachedAt = DateTime.fromMillisecondsSinceEpoch(timestamp);
+        if (DateTime.now().difference(cachedAt) > _cacheExpiry) return;
+      }
+
+      final parsedExams = await compute(
+        _parseQuizModelsInBackground,
+        decoded['quizzes'],
+      );
+      if (parsedExams.isNotEmpty) {
+        mockExams.assignAll(parsedExams);
+      }
+    } catch (e) {
+      debugPrint('Mock exam cache load error: $e');
+    }
+  }
+
+  Future<void> _saveExamsToCache(List<QuizModel> exams) async {
+    try {
+      await _storage.write(
+        _examCacheKey,
+        json.encode({
+          'quizzes': exams.map((exam) => exam.toJson()).toList(),
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        }),
+      );
+      await _storage.write(
+        _examCacheTimestampKey,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (e) {
+      debugPrint('Mock exam cache save error: $e');
+    }
+  }
+
   Future<void> _saveAttempts() async {
     await _storage.write(
       _attemptCacheKey,
       json.encode(attempts.map((key, value) => MapEntry(key, value.toJson()))),
     );
+  }
+
+  Future<void> _saveAnswersToCache() async {
+    try {
+      await _storage.write(
+        _answersCacheKey,
+        json.encode({
+          'examAnswers': examAnswers.map((key, value) => MapEntry(key, value)),
+          'examCorrectness': examCorrectness.map(
+            (key, value) => MapEntry(key, value),
+          ),
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        }),
+      );
+    } catch (e) {
+      debugPrint('Mock exam answers cache save error: $e');
+    }
   }
 
   String _cleanError(dynamic error) {
@@ -381,7 +687,7 @@ class MockExamController extends GetxController {
         : message;
   }
 
-  String _convertToSuperscript(String text) {
+  static String _convertToSuperscriptStatic(String text) {
     const supMap = {
       '0': '⁰',
       '1': '¹',
@@ -408,11 +714,15 @@ class MockExamController extends GetxController {
 class MockExamLocalResult {
   MockExamLocalResult({
     required this.correctAnswers,
+    required this.answeredQuestions,
+    required this.incorrectAnswers,
     required this.total,
     required this.percentage,
   });
 
   final int correctAnswers;
+  final int answeredQuestions;
+  final int incorrectAnswers;
   final int total;
   final double percentage;
 }

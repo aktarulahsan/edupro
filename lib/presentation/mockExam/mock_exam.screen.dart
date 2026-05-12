@@ -703,6 +703,7 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
 
   List<QuizList> get _questions => widget.exam.quizList ?? [];
   int get _totalQuestions => _questions.length;
+  String get _examId => widget.exam.examId ?? widget.exam.hashCode.toString();
   int get _answeredCount {
     var count = 0;
     for (final selected in _selectedOptions.values) {
@@ -716,6 +717,10 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
   void initState() {
     super.initState();
     _remainingSeconds = widget.durationSeconds;
+    _controller.loadExamAnswers(_examId, _questions);
+    _selectedOptions.addAll(
+      _controller.getSelectedOptionsForExam(_examId, _questions),
+    );
     _startTimer();
   }
 
@@ -763,6 +768,11 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           ),
           actions: [
+            IconButton(
+              tooltip: 'Submit exam',
+              onPressed: _isSubmitting ? null : _confirmSubmit,
+              icon: const Icon(Icons.done_all_rounded),
+            ),
             IconButton(
               tooltip: 'Question list',
               onPressed: _showQuestionNavigator,
@@ -955,12 +965,19 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
   Widget _buildRadioOption(Option option, int questionIndex, int optionIndex) {
     final selected = _selectedOptions[questionIndex] as int?;
     final isSelected = selected == optionIndex;
+    final question = _questions[questionIndex];
 
     return RadioGroup<int>(
       groupValue: selected,
       onChanged: (value) {
         if (value == null) return;
         setState(() => _selectedOptions[questionIndex] = value);
+        _controller.saveCurrentExamAnswer(
+          examId: _examId,
+          questionIndex: questionIndex,
+          question: question,
+          answer: value,
+        );
       },
       child: _OptionShell(
         isSelected: isSelected,
@@ -989,6 +1006,7 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
   ) {
     final selected = _selectedOptions[questionIndex] as List<int>? ?? <int>[];
     final isSelected = selected.contains(optionIndex);
+    final question = _questions[questionIndex];
 
     return _OptionShell(
       isSelected: isSelected,
@@ -1011,15 +1029,22 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
           setState(() {
             final next = List<int>.from(selected);
             if (checked == true) {
-              next.add(optionIndex);
+              if (!next.contains(optionIndex)) next.add(optionIndex);
             } else {
               next.remove(optionIndex);
             }
+            next.sort();
             if (next.isEmpty) {
               _selectedOptions.remove(questionIndex);
             } else {
               _selectedOptions[questionIndex] = next;
             }
+            _controller.saveCurrentExamAnswer(
+              examId: _examId,
+              questionIndex: questionIndex,
+              question: question,
+              answer: next,
+            );
           });
         },
       ),
@@ -1027,8 +1052,6 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
   }
 
   Widget _buildBottomBar() {
-    final isLast = _currentIndex == _totalQuestions - 1;
-
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: const BoxDecoration(
@@ -1058,14 +1081,7 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: _isSubmitting
-                    ? null
-                    : isLast
-                    ? () => _confirmSubmit()
-                    : () => _pageController.nextPage(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOut,
-                      ),
+                onPressed: _isSubmitting ? null : _confirmSubmit,
                 icon: _isSubmitting
                     ? const SizedBox(
                         width: 18,
@@ -1075,16 +1091,10 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : Icon(
-                        isLast
-                            ? Icons.done_all_rounded
-                            : Icons.arrow_forward_rounded,
-                      ),
-                label: Text(isLast ? 'Submit Exam' : 'Next Question'),
+                    : const Icon(Icons.done_all_rounded),
+                label: const Text('Submit Exam'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isLast
-                      ? AppColors.success
-                      : AppColors.primary,
+                  backgroundColor: AppColors.success,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
@@ -1092,6 +1102,17 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
                   ),
                 ),
               ),
+            ),
+            const SizedBox(width: 12),
+            IconButton.filledTonal(
+              tooltip: 'Next',
+              onPressed: _currentIndex == _totalQuestions - 1
+                  ? null
+                  : () => _pageController.nextPage(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOut,
+                    ),
+              icon: const Icon(Icons.arrow_forward_rounded),
             ),
           ],
         ),
@@ -1280,9 +1301,14 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
     _timer?.cancel();
 
     final timeSpent = widget.durationSeconds - _remainingSeconds;
+    final submittedOptions = Map<int, dynamic>.from(_selectedOptions);
+    final localResult = _controller.calculateLocalResult(
+      questions: _questions,
+      selectedOptions: submittedOptions,
+    );
     final response = await _controller.submitMockExam(
       exam: widget.exam,
-      selectedOptions: _selectedOptions,
+      selectedOptions: submittedOptions,
       totalTimeSpent: timeSpent,
       autoSubmitted: autoSubmitted,
     );
@@ -1290,16 +1316,13 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
     if (!mounted) return;
     setState(() => _isSubmitting = false);
 
-    final localResult = _controller.calculateLocalResult(
-      questions: _questions,
-      selectedOptions: _selectedOptions,
-    );
-
     _showResultDialog(
       response: response,
-      correctAnswers: response?.correctAnswers ?? localResult.correctAnswers,
-      totalQuestions: response?.totalQuestions ?? localResult.total,
-      percentage: response?.percentage ?? localResult.percentage,
+      correctAnswers: localResult.correctAnswers,
+      answeredQuestions: localResult.answeredQuestions,
+      incorrectAnswers: localResult.incorrectAnswers,
+      totalQuestions: localResult.total,
+      percentage: localResult.percentage,
       timeSpent: timeSpent,
       autoSubmitted: autoSubmitted,
     );
@@ -1308,6 +1331,8 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
   void _showResultDialog({
     required SubmitQuizResponse? response,
     required int correctAnswers,
+    required int answeredQuestions,
+    required int incorrectAnswers,
     required int totalQuestions,
     required double percentage,
     required int timeSpent,
@@ -1345,7 +1370,8 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
             _buildScoreCircle(percentage),
             const SizedBox(height: 18),
             _buildResultRow('Score', '$correctAnswers/$totalQuestions'),
-            _buildResultRow('Answered', '$_answeredCount/$totalQuestions'),
+            _buildResultRow('Answered', '$answeredQuestions/$totalQuestions'),
+            _buildResultRow('Incorrect', '$incorrectAnswers/$totalQuestions'),
             _buildResultRow('Time Spent', _formatClock(timeSpent)),
             if ((response?.gainedXP ?? 0) > 0)
               _buildResultRow('XP Earned', '+${response!.gainedXP}'),
@@ -1367,6 +1393,7 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
                 _currentIndex = 0;
                 _remainingSeconds = widget.durationSeconds;
               });
+              _controller.clearExamAnswers(_examId);
               _pageController.jumpToPage(0);
               _startTimer();
             },
@@ -1458,7 +1485,7 @@ class _MockExamQuestionScreenState extends State<MockExamQuestionScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: const Text('Leave exam?'),
         content: const Text(
-          'Your current answers will be lost if you leave before submitting.',
+          'Your current answers are saved locally. You can continue later.',
         ),
         actions: [
           TextButton(

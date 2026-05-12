@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-List<QuizModel> quizModelPostFromJson2(var str) {
+List<QuizModel> quizModelPostFromJson2(dynamic str) {
   if (str == null) return [];
 
   final decoded = json.decode(str);
@@ -16,10 +16,10 @@ List<QuizModel> quizModelPostFromJson2(var str) {
   return [];
 }
 
-List<QuizModel> quizModelPostFromJson(var str) =>
+List<QuizModel> quizModelPostFromJson(dynamic str) =>
     List<QuizModel>.from(json.decode(str!).map((x) => QuizModel.fromJson(x)));
 
-List<QuizList> quizListPostFromJson(var str) =>
+List<QuizList> quizListPostFromJson(dynamic str) =>
     List<QuizList>.from(json.decode(str!).map((x) => QuizList.fromJson(x)));
 
 class QuizModel {
@@ -137,7 +137,7 @@ class QuizList {
     givenAns: json["givenAns"]?.toString() ?? "",
     correctAnswer: json["correctAnswer"]?.toString() ?? "",
     explanation: json["explanation"]?.toString(),
-    questionType: json["questionType"] as int?,
+    questionType: _parseInt(json["questionType"]),
     optionList: json["optionList"] == null
         ? []
         : (json["optionList"] as List)
@@ -157,6 +157,12 @@ class QuizList {
     "questionType": questionType,
     "optionList": optionList?.map((x) => x.toJson()).toList() ?? [],
   };
+}
+
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  return int.tryParse(value.toString());
 }
 
 class Option {

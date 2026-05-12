@@ -23,12 +23,12 @@ class Question {
 
   factory Question.fromJson(Map<String, dynamic> json) {
     return Question(
-      questionNo: json['questionNo'] ?? 0,
+      questionNo: _parseInt(json['questionNo']) ?? 0,
       questionId: json['questionId'] ?? '',
       questionText: json['questionText'] ?? '',
       givenAns: json['givenAns'] ?? '',
       correctAnswer: json['correctAnswer'] ?? '',
-      questionType: json['questionType'] ?? 0,
+      questionType: _parseInt(json['questionType']) ?? 0,
       explanation: json['explanation'] ?? '',
       optionList:
           (json['optionList'] as List?)
@@ -48,4 +48,10 @@ class Question {
     "questionType": questionType,
     "optionList": optionList.map((o) => o.toJson()).toList(),
   };
+}
+
+int? _parseInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  return int.tryParse(value.toString());
 }
