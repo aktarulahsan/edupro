@@ -673,7 +673,10 @@ class _BcsQuestionState extends State<BcsQuestion>
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Retry'),
+                        child: const Text(
+                          'Retry',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                   ],

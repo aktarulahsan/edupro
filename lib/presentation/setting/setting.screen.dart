@@ -3,6 +3,7 @@ import 'package:edupro/infrastructure/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'controllers/setting.controller.dart';
@@ -62,19 +63,24 @@ class SettingScreen extends GetView<SettingController> {
                       icon: Icons.share_rounded,
                       title: 'Share App',
                       subtitle: 'Invite friends to join',
-                      onTap: () => _showComingSoon('Share App'),
+                      onTap: () => shareApp(),
                     ),
                     _SettingsTile(
                       icon: Icons.star_rounded,
                       title: 'Rate Us',
                       subtitle: 'Love our app? Leave a review',
-                      onTap: () => _showComingSoon('Rate App'),
+                      // onTap: () => _showComingSoon('Rate App'),
+                      onTap: () => _launchUrl(
+                        'https://play.google.com/store/apps/details?id=com.aktarulahsan.kuishoudownloader',
+                      ),
                     ),
                     _SettingsTile(
                       icon: Icons.message_rounded,
                       title: 'Join Community',
                       subtitle: 'Connect on WhatsApp',
-                      onTap: () => _showComingSoon('WhatsApp Group'),
+                      onTap: () => _launchUrl(
+                        'https://chat.whatsapp.com/LEJOZGsYlgW1rAYvDU06tB',
+                      ),
                     ),
                   ],
                 ),
@@ -112,6 +118,13 @@ class SettingScreen extends GetView<SettingController> {
         }),
       ),
     );
+  }
+
+  void shareApp() {
+    // Share.share(
+    //   'Check out this awesome app: Kuishu Downloader\nDownload it from the Play Store: https://play.google.com/store/apps/details?id=com.aktarulahsan.kuishoudownloader',
+    // );
+    SharePlus.instance.share(ShareParams(text: 'Check out this awesome app'));
   }
 
   PreferredSizeWidget _buildAppBar() {

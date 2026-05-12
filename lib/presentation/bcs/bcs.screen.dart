@@ -114,7 +114,7 @@ class BcsScreen extends GetView<BcsController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'BCS Preliminary Test',
+                  'BCS Preliminary Exam',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
