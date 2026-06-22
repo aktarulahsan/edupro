@@ -1,7 +1,11 @@
 // controllers/home.controller.dart
+import 'package:edupro/infrastructure/dal/daos/baseResponse.dart';
 import 'package:edupro/infrastructure/dal/daos/usersModel.dart';
 import 'package:edupro/infrastructure/dal/model/feature_card_data.dart';
+import 'package:edupro/infrastructure/dal/model/scoreboard_model.dart';
 import 'package:edupro/infrastructure/navigation/routes.dart';
+import 'package:edupro/infrastructure/service/apiService.dart';
+import 'package:edupro/infrastructure/service/api_endpoint.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -9,7 +13,7 @@ class HomeController extends GetxController {
   final activeNavIndex = 0.obs;
   final userName = 'John Doe'.obs;
   final userInitials = 'JD'.obs;
-  final userXP = 2450.obs;
+  final userXP = 0.obs;
 
   final List<FeatureCardData> featureCards = const [
     FeatureCardData(
@@ -48,13 +52,39 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     _loadUserData();
+    loadUserTotalScore();
   }
 
   void _loadUserData() {
-    // Load user data
-    userName.value = UserCache.getUserName() ?? "Guest";
-    userInitials.value = UserCache.getUserName()!.trim().substring(0, 2);
-    userXP.value = 0;
+    final name = UserCache.getUserName()?.trim();
+    userName.value = name == null || name.isEmpty ? 'Guest' : name;
+    userInitials.value = _initialsFromName(userName.value);
+  }
+
+  Future<void> loadUserTotalScore() async {
+    try {
+      if (UserCache.getUserData() == null) return;
+
+      final requestPayload = APIRequestParam(
+        path: ApiEndPoints.quizModule.getDashboardData,
+        options: UserCache.getOption(),
+      );
+
+      final response = await AppApiProvider.instance.get(requestPayload);
+      response.fold((_) {}, (success) {
+        final res = BaseResponse.fromJson(success.data);
+        final data = res.obj ?? res.data;
+        if (data is Map<String, dynamic>) {
+          userXP.value = DashboardData.fromJson(data).totalScore;
+        } else if (data is Map) {
+          userXP.value = DashboardData.fromJson(
+            data.cast<String, dynamic>(),
+          ).totalScore;
+        }
+      });
+    } catch (e) {
+      debugPrint('Failed to load total score: $e');
+    }
   }
 
   void setActiveNav(int index) {
@@ -109,13 +139,23 @@ class HomeController extends GetxController {
   void updateUserData(String name, int xp) {
     userName.value = name;
     userXP.value = xp;
-    if (name.isNotEmpty) {
-      final parts = name.split(' ');
-      if (parts.length >= 2) {
-        userInitials.value = '${parts[0][0]}${parts[1][0]}';
-      } else if (parts.isNotEmpty) {
-        userInitials.value = parts[0][0].toString();
-      }
+    userInitials.value = _initialsFromName(name);
+  }
+
+  String _initialsFromName(String name) {
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
+    if (parts.isNotEmpty) {
+      return parts.first
+          .substring(0, parts.first.length >= 2 ? 2 : 1)
+          .toUpperCase();
+    }
+    return 'G';
   }
 }

@@ -53,12 +53,16 @@ class UserProfileChip extends StatelessWidget {
                   ),
                 ),
                 Row(
-                  children: const [
-                    Icon(Icons.emoji_events_rounded, size: 13, color: kPrimary),
-                    SizedBox(width: 3),
+                  children: [
+                    const Icon(
+                      Icons.emoji_events_rounded,
+                      size: 13,
+                      color: kPrimary,
+                    ),
+                    const SizedBox(width: 3),
                     Text(
-                      '2450 XP',
-                      style: TextStyle(
+                      '$userXP Score',
+                      style: const TextStyle(
                         fontSize: 11,
                         color: kPrimary,
                         fontWeight: FontWeight.w600,
