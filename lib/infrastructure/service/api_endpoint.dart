@@ -76,10 +76,8 @@ class QuizModule {
   String getQuestionSetUrl(dynamic setId) =>
       p.join(_baseURL, 'set/get_questions_by_set/$setId');
 
-  final String getDashboardData = p.join(
-    _baseURL,
-    'submit/student_dashboard?studentId=1',
-  );
+  String getDashboardData(int studentId) =>
+      p.join(_baseURL, 'submit/student_dashboard?studentId=$studentId');
 }
 
 class TaskModule {

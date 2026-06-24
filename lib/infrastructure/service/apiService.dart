@@ -32,7 +32,8 @@ class APIRequestParam {
       data: map['data'] as dynamic,
       queryParameters: map['queryParameters'] != null
           ? Map<String, dynamic>.from(
-              (map['queryParameters'] as Map<String, dynamic>))
+              (map['queryParameters'] as Map<String, dynamic>),
+            )
           : null,
     );
   }
@@ -87,14 +88,21 @@ class AppApiProvider implements ApiProvider {
 
   @override
   Future<Either<DioException, Response>> delete(APIRequestParam param) async {
-    return await Task(() => dio.delete(param.path,
+    return await Task(
+      () => dio.delete(
+        param.path,
         queryParameters: param.queryParameters,
-        options: param.options)).attempt().run().then((either) {
-      return either.fold((l) {
-        return Left(l as DioException);
-      }, (r) {
-        return Right(r);
-      });
+        options: param.options,
+      ),
+    ).attempt().run().then((either) {
+      return either.fold(
+        (l) {
+          return Left(l as DioException);
+        },
+        (r) {
+          return Right(r);
+        },
+      );
     });
   }
 
@@ -115,17 +123,17 @@ class AppApiProvider implements ApiProvider {
   Future<Either<DioException, Response>> get(APIRequestParam param) async {
     // final opts = await _getOptions(param.options);
     return await Task(
-          () => dio.get(
+      () => dio.get(
         param.path,
         queryParameters: param.queryParameters,
         // options: opts,
       ),
     ).attempt().run().then((either) {
       return either.fold(
-            (l) {
+        (l) {
           return Left(l as DioException);
         },
-            (r) {
+        (r) {
           return Right(r);
         },
       );
@@ -134,15 +142,22 @@ class AppApiProvider implements ApiProvider {
 
   @override
   Future<Either<DioException, Response>> patch(APIRequestParam param) async {
-    return await Task(() => dio.patch(param.path,
+    return await Task(
+      () => dio.patch(
+        param.path,
         data: param.data,
         queryParameters: param.queryParameters,
-        options: param.options)).attempt().run().then((either) {
-      return either.fold((l) {
-        return Left(l as DioException);
-      }, (r) {
-        return Right(r);
-      });
+        options: param.options,
+      ),
+    ).attempt().run().then((either) {
+      return either.fold(
+        (l) {
+          return Left(l as DioException);
+        },
+        (r) {
+          return Right(r);
+        },
+      );
     });
   }
 
@@ -152,7 +167,7 @@ class AppApiProvider implements ApiProvider {
     // print(param.data);
     // print(param.options!.headers);
     return await Task(
-          () => dio.post(
+      () => dio.post(
         param.path,
         data: param.data,
         queryParameters: param.queryParameters,
@@ -160,10 +175,10 @@ class AppApiProvider implements ApiProvider {
       ),
     ).attempt().run().then((either) {
       return either.fold(
-            (l) {
+        (l) {
           return Left(l as DioException);
         },
-            (r) {
+        (r) {
           return Right(r);
         },
       );
@@ -172,14 +187,21 @@ class AppApiProvider implements ApiProvider {
 
   @override
   Future<Either<DioException, Response>> put(APIRequestParam param) async {
-    return await Task(() => dio.put(param.path,
+    return await Task(
+      () => dio.put(
+        param.path,
         queryParameters: param.queryParameters,
-        options: param.options)).attempt().run().then((either) {
-      return either.fold((l) {
-        return Left(l as DioException);
-      }, (r) {
-        return Right(r);
-      });
+        options: param.options,
+      ),
+    ).attempt().run().then((either) {
+      return either.fold(
+        (l) {
+          return Left(l as DioException);
+        },
+        (r) {
+          return Right(r);
+        },
+      );
     });
   }
 }

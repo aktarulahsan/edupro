@@ -14,6 +14,9 @@ class HomeController extends GetxController {
   final userName = 'John Doe'.obs;
   final userInitials = 'JD'.obs;
   final userXP = 0.obs;
+  final isScoreLoading = false.obs;
+  final scoreErrorMessage = ''.obs;
+  final dashboardData = Rx<DashboardData?>(null);
 
   final List<FeatureCardData> featureCards = const [
     FeatureCardData(
@@ -62,53 +65,76 @@ class HomeController extends GetxController {
   }
 
   Future<void> loadUserTotalScore() async {
-    try {
-      if (UserCache.getUserData() == null) return;
+    final studentId = UserCache.getUesrId();
+    if (studentId == null) {
+      scoreErrorMessage.value = 'User not found';
+      return;
+    }
 
+    isScoreLoading.value = true;
+    scoreErrorMessage.value = '';
+
+    try {
       final requestPayload = APIRequestParam(
-        path: ApiEndPoints.quizModule.getDashboardData,
+        path: ApiEndPoints.quizModule.getDashboardData(studentId),
         options: UserCache.getOption(),
       );
 
       final response = await AppApiProvider.instance.get(requestPayload);
-      response.fold((_) {}, (success) {
-        final res = BaseResponse.fromJson(success.data);
-        final data = res.obj ?? res.data;
-        if (data is Map<String, dynamic>) {
-          userXP.value = DashboardData.fromJson(data).totalScore;
-        } else if (data is Map) {
-          userXP.value = DashboardData.fromJson(
-            data.cast<String, dynamic>(),
-          ).totalScore;
-        }
-      });
+      response.fold(
+        (_) {
+          scoreErrorMessage.value = 'Score unavailable';
+        },
+        (success) {
+          final res = BaseResponse.fromJson(success.data);
+          final data = res.obj ?? res.data;
+          DashboardData? parsedData;
+          if (data is Map<String, dynamic>) {
+            parsedData = DashboardData.fromJson(data);
+          } else if (data is Map) {
+            parsedData = DashboardData.fromJson(data.cast<String, dynamic>());
+          }
+
+          if (parsedData != null) {
+            dashboardData.value = parsedData;
+            userXP.value = parsedData.totalScore;
+          } else {
+            scoreErrorMessage.value = 'Score unavailable';
+          }
+        },
+      );
     } catch (e) {
+      scoreErrorMessage.value = 'Score unavailable';
       debugPrint('Failed to load total score: $e');
+    } finally {
+      isScoreLoading.value = false;
     }
   }
 
-  void setActiveNav(int index) {
-    activeNavIndex.value = index;
-    _handleNavigation(index);
-  }
+  Future<void> setActiveNav(int index) async {
+    if (index == 0 || index == activeNavIndex.value) return;
 
-  void _handleNavigation(int index) {
-    debugPrint('Navigating to index: $index');
-    switch (index) {
-      case 0:
-        // Already on home
-        break;
-      case 1:
-        Get.toNamed(Routes.BCS);
-        break;
-      case 2:
-        Get.toNamed(Routes.MOCK_EXAM);
-        break;
-      case 3:
-        Get.toNamed(Routes.SUBJECTIVE);
-        break;
-      default:
-        break;
+    activeNavIndex.value = index;
+    final route = switch (index) {
+      1 => Routes.MCQ_PRACTICE,
+      2 => Routes.MOCK_EXAM,
+      3 => Routes.SCOREBOARD,
+      4 => Routes.SETTING,
+      _ => null,
+    };
+
+    if (route == null) {
+      activeNavIndex.value = 0;
+      return;
+    }
+
+    try {
+      await Get.toNamed(route);
+    } finally {
+      activeNavIndex.value = 0;
+      if (index != 4) {
+        loadUserTotalScore();
+      }
     }
   }
 

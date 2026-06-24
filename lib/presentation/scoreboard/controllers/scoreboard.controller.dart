@@ -23,7 +23,8 @@ class ScoreboardController extends GetxController {
       errorMessage.value = '';
 
       final user = UserCache.getUserData();
-      if (user == null) {
+      final studentId = user?.userId;
+      if (studentId == null) {
         errorMessage.value = 'User not found';
         isLoading.value = false;
         return;
@@ -31,7 +32,7 @@ class ScoreboardController extends GetxController {
 
       final options = UserCache.getOption();
       final requestPayload = APIRequestParam(
-        path: ApiEndPoints.quizModule.getDashboardData,
+        path: ApiEndPoints.quizModule.getDashboardData(studentId),
         options: options,
       );
 

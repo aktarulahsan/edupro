@@ -2,6 +2,7 @@ import 'package:edupro/infrastructure/dal/model/exam_set.model.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../infrastructure/theme/app_colors.dart';
 import '../../infrastructure/theme/app_bar_helper.dart';
@@ -20,22 +21,7 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(
-                  color: AppColors.primary,
-                  strokeWidth: 3,
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Loading exam sets...',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          );
+          return const _ExamSetSkeletonList();
         }
 
         if (controller.errorMessage.isNotEmpty) {
@@ -103,14 +89,16 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
     ExamSetModel examSet,
     int index,
   ) {
+    final isPass = examSet.passed ?? false;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: kCardBg,
         borderRadius: BorderRadius.circular(16),
+        border: isPass ? Border.all(color: Colors.green.shade300, width: 1.5) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: isPass ? Colors.green.withOpacity(0.08) : Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -133,10 +121,15 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
                       height: 50,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            Colors.blue.shade400,
-                            Colors.purple.shade400,
-                          ],
+                          colors: isPass
+                              ? [
+                                  Colors.green.shade400,
+                                  Colors.teal.shade400,
+                                ]
+                              : [
+                                  Colors.blue.shade400,
+                                  Colors.purple.shade400,
+                                ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -164,20 +157,13 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
                               color: Colors.black87,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          // Text(
-                          //   'Set ${examSet.setNo}',
-                          //   style: TextStyle(
-                          //     fontSize: 12,
-                          //     color: Colors.grey[600],
-                          //   ),
-                          // ),
+                          _buildScoreBadge(examSet),
                         ],
                       ),
                     ),
                     Icon(
-                      Icons.play_circle_filled,
-                      color: Colors.blue.shade600,
+                      isPass ? Icons.check_circle_rounded : Icons.play_circle_filled,
+                      color: isPass ? Colors.green.shade600 : Colors.blue.shade600,
                       size: 32,
                     ),
                   ],
@@ -311,7 +297,7 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
                       controller.getQuestBySetId(
                         examSet.setNo.toString(),
                         examSet.setName,
-                        examSet.setNo
+                        examSet.setNo,
                         // context, // Use the original screen context, not dialog context
                       );
                     },
@@ -454,5 +440,111 @@ class McqPracticeScreen extends GetView<McqPracticeController> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  Widget _buildScoreBadge(ExamSetModel examSet) {
+    if (examSet.userScore == null) return const SizedBox.shrink();
+
+    final isPass = examSet.passed ?? false;
+    final score = examSet.userScore;
+    final total = examSet.userTotalQuestions ?? 10;
+
+    final bgColor = isPass ? Colors.green.shade50 : Colors.red.shade50;
+    final textColor = isPass ? Colors.green.shade800 : Colors.red.shade800;
+    final icon = isPass ? Icons.check_circle_outline : Icons.highlight_off;
+    final text = isPass ? 'Passed: $score/$total' : 'Failed: $score/$total';
+
+    return Container(
+      margin: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: textColor.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: textColor),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExamSetSkeletonList extends StatelessWidget {
+  const _ExamSetSkeletonList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppColors.shimmerBase,
+      highlightColor: AppColors.shimmerHighlight,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: 5,
+        itemBuilder: (context, index) => Container(
+          height: 116,
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.backgroundWhite,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Row(
+            children: [
+              _SkeletonBox(width: 50, height: 50, radius: 12),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SkeletonBox(width: 150, height: 16),
+                    SizedBox(height: 12),
+                    _SkeletonBox(width: 105, height: 12),
+                  ],
+                ),
+              ),
+              _SkeletonBox(width: 30, height: 30, radius: 15),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  final double width;
+  final double height;
+  final double radius;
+
+  const _SkeletonBox({
+    required this.width,
+    required this.height,
+    this.radius = 6,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.backgroundWhite,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
   }
 }

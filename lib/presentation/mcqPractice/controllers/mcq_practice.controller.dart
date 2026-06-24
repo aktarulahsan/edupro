@@ -14,8 +14,16 @@ import 'package:edupro/utils/loader.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class McqPracticeController extends GetxController {
+  static const _examSetsCacheKey = 'mcq_exam_sets_cache';
+  static const _examSetsCacheTimeKey = 'mcq_exam_sets_cache_time';
+  static const _questionCachePrefix = 'mcq_questions_cache_';
+  static const _questionCacheTimePrefix = 'mcq_questions_cache_time_';
+  static const _questionCacheLifetime = Duration(hours: 6);
+
+  final GetStorage _storage = GetStorage();
   final isLoading = false.obs;
   final isQuestionsLoading = false.obs;
   final examSetList = <ExamSetModel>[].obs;
@@ -25,17 +33,19 @@ class McqPracticeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    getQuizList();
+    final hasCachedData = _loadCachedExamSets();
+    getQuizList(showLoader: !hasCachedData);
   }
 
-  Future<void> getQuizList() async {
+  Future<void> getQuizList({bool showLoader = true}) async {
     try {
-      isLoading.value = true;
+      isLoading.value = showLoader && examSetList.isEmpty;
       errorMessage.value = '';
 
+      final userId = UserCache.getUesrId() ?? 1001;
       final options = UserCache.getOption();
       final requestPayload = APIRequestParam(
-        path: ApiEndPoints.quizModule.generateQuizSet,
+        path: '${ApiEndPoints.quizModule.generateQuizSet}?userId=$userId',
         options: options,
       );
 
@@ -43,12 +53,16 @@ class McqPracticeController extends GetxController {
 
       response.fold(
         (error) {
-          errorMessage.value = error.toString();
+          if (examSetList.isEmpty) {
+            errorMessage.value = error.toString();
+          }
           isLoading.value = false;
         },
         (success) {
           final res = BaseResponse.fromJson(success.data);
-          examSetList.value = examSetModelPostFromJson(json.encode(res.items));
+          final parsedSets = _parseExamSets(res.items);
+          examSetList.assignAll(parsedSets);
+          _saveExamSetsToCache(parsedSets);
           isLoading.value = false;
         },
       );
@@ -62,6 +76,13 @@ class McqPracticeController extends GetxController {
   }
 
   Future<void> getQuestBySetId(String setId, String title, int setNo) async {
+    final cachedQuestions = _loadCachedQuestions(setId);
+    if (cachedQuestions != null && cachedQuestions.isNotEmpty) {
+      questionList.assignAll(cachedQuestions);
+      _openQuestionScreen(title: title, setNo: setNo);
+      return;
+    }
+
     try {
       isQuestionsLoading.value = true;
 
@@ -89,32 +110,16 @@ class McqPracticeController extends GetxController {
         },
         (success) {
           final res = BaseResponse.fromJson(success.data);
-          questionList.value = quizListPostFromJson(json.encode(res.items));
+          final parsedQuestions = _parseQuestions(res.items);
+          questionList.assignAll(parsedQuestions);
           isQuestionsLoading.value = false;
 
           if (questionList.isNotEmpty) {
-            print("Questions length: ${questionList.length}");
-
-            // Ensure loader is hidden before navigation
+            _saveQuestionsToCache(setId, parsedQuestions);
             hideLoader();
-
-            // Use a small delay to ensure the dialog is completely closed
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (Get.context != null) {
-                Get.to(
-                  () => QuestionScreen(
-                    quizList: questionList.toList(),
-                    title: title,
-                    setNo: setNo,
-                  ),
-                  transition: Transition.rightToLeft,
-                  duration: const Duration(milliseconds: 300),
-                );
-              }
-            });
+            _openQuestionScreen(title: title, setNo: setNo);
           } else {
             hideLoader();
-            print("No questions available");
             Get.snackbar(
               'Info',
               "No questions available",
@@ -128,7 +133,7 @@ class McqPracticeController extends GetxController {
     } catch (e) {
       isQuestionsLoading.value = false;
       hideLoader();
-      print("Error in getQuestBySetId: $e");
+      debugPrint('Error in getQuestBySetId: $e');
       Get.snackbar(
         'Error',
         'An error occurred while loading questions',
@@ -137,6 +142,112 @@ class McqPracticeController extends GetxController {
         snackPosition: SnackPosition.BOTTOM,
       );
     }
+  }
+
+  bool _loadCachedExamSets() {
+    try {
+      final cached = _storage.read<List<dynamic>>(_examSetsCacheKey);
+      if (cached == null || cached.isEmpty) return false;
+
+      final parsedSets = _parseExamSets(cached);
+      if (parsedSets.isEmpty) return false;
+
+      examSetList.assignAll(parsedSets);
+      return true;
+    } catch (e) {
+      debugPrint('MCQ exam-set cache load failed: $e');
+      return false;
+    }
+  }
+
+  Future<void> _saveExamSetsToCache(List<ExamSetModel> sets) async {
+    try {
+      await _storage.write(
+        _examSetsCacheKey,
+        sets.map((set) => set.toJson()).toList(),
+      );
+      await _storage.write(
+        _examSetsCacheTimeKey,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (e) {
+      debugPrint('MCQ exam-set cache save failed: $e');
+    }
+  }
+
+  List<QuizList>? _loadCachedQuestions(String setId) {
+    try {
+      final cachedAt = _storage.read<int>('$_questionCacheTimePrefix$setId');
+      if (cachedAt == null) return null;
+
+      final age = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(cachedAt),
+      );
+      if (age > _questionCacheLifetime) return null;
+
+      final cached = _storage.read<List<dynamic>>(
+        '$_questionCachePrefix$setId',
+      );
+      if (cached == null || cached.isEmpty) return null;
+      return _parseQuestions(cached);
+    } catch (e) {
+      debugPrint('MCQ question cache load failed: $e');
+      return null;
+    }
+  }
+
+  Future<void> _saveQuestionsToCache(
+    String setId,
+    List<QuizList> questions,
+  ) async {
+    try {
+      await _storage.write(
+        '$_questionCachePrefix$setId',
+        questions.map((question) => question.toJson()).toList(),
+      );
+      await _storage.write(
+        '$_questionCacheTimePrefix$setId',
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (e) {
+      debugPrint('MCQ question cache save failed: $e');
+    }
+  }
+
+  List<ExamSetModel> _parseExamSets(dynamic source) {
+    return _asList(source)
+        .whereType<Map>()
+        .map((item) => ExamSetModel.fromJson(item.cast<String, dynamic>()))
+        .toList(growable: false);
+  }
+
+  List<QuizList> _parseQuestions(dynamic source) {
+    return _asList(source)
+        .whereType<Map>()
+        .map((item) => QuizList.fromJson(item.cast<String, dynamic>()))
+        .toList(growable: false);
+  }
+
+  List<dynamic> _asList(dynamic source) {
+    if (source is List) return source;
+    if (source is String) {
+      final decoded = json.decode(source);
+      return decoded is List ? decoded : const [];
+    }
+    return const [];
+  }
+
+  void _openQuestionScreen({required String title, required int setNo}) {
+    if (Get.context == null) return;
+    Get.to(
+      () => QuestionScreen(
+        quizList: questionList.toList(growable: false),
+        title: title,
+        setNo: setNo,
+      ),
+      transition: Transition.rightToLeft,
+      duration: const Duration(milliseconds: 220),
+    );
   }
 
   Future<SubmitQuizResponse?> submitQuizResult({
@@ -193,12 +304,13 @@ class McqPracticeController extends GetxController {
         },
         (success) {
           final res = BaseResponse.fromJson(success.data);
-          if (res.success == 'success') {
+          if (res.success == true || res.status == 'success') {
             submitResponse = SubmitQuizResponse.fromJson(res.data ?? {});
             // Update user XP if needed
             if (submitResponse!.gainedXP > 0) {
               _updateUserXP(submitResponse!.gainedXP);
             }
+            getQuizList(showLoader: false);
           } else {
             Get.snackbar(
               'Submission Failed',

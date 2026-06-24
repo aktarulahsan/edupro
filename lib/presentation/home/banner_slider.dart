@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:edupro/infrastructure/dal/model/banner_item.dart';
 import 'package:edupro/infrastructure/theme/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ class BannerSlider extends StatefulWidget {
 
 class _BannerSliderState extends State<BannerSlider> {
   final PageController _pageController = PageController();
+  Timer? _autoScrollTimer;
   int _currentPage = 0;
 
   final List<BannerItem> banners = const [
@@ -37,8 +40,10 @@ class _BannerSliderState extends State<BannerSlider> {
   @override
   void initState() {
     super.initState();
-    // Auto-scroll banner every 5 seconds
-    Future.delayed(const Duration(seconds: 5), _autoScroll);
+    _autoScrollTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _autoScroll(),
+    );
   }
 
   void _autoScroll() {
@@ -49,8 +54,14 @@ class _BannerSliderState extends State<BannerSlider> {
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
-      Future.delayed(const Duration(seconds: 5), _autoScroll);
     }
+  }
+
+  @override
+  void dispose() {
+    _autoScrollTimer?.cancel();
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -67,14 +78,13 @@ class _BannerSliderState extends State<BannerSlider> {
         },
         itemCount: banners.length,
         itemBuilder: (context, index) {
-          return bannerCard( banners[index]);
+          return bannerCard(banners[index]);
         },
       ),
     );
   }
 
-
-  Widget bannerCard( BannerItem banner){
+  Widget bannerCard(BannerItem banner) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       padding: const EdgeInsets.all(12),
@@ -82,10 +92,7 @@ class _BannerSliderState extends State<BannerSlider> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            banner.color.withOpacity(0.8),
-            banner.color,
-          ],
+          colors: [banner.color.withOpacity(0.8), banner.color],
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
@@ -104,11 +111,7 @@ class _BannerSliderState extends State<BannerSlider> {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              banner.icon,
-              color: Colors.white,
-              size: 28,
-            ),
+            child: Icon(banner.icon, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -127,10 +130,7 @@ class _BannerSliderState extends State<BannerSlider> {
                 const SizedBox(height: 4),
                 Text(
                   banner.subtitle,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -141,6 +141,4 @@ class _BannerSliderState extends State<BannerSlider> {
       ),
     );
   }
-
-
 }

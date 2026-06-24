@@ -8,12 +8,16 @@ class UserProfileChip extends StatelessWidget {
   final String userName;
   final String userInitials;
   final int userXP;
+  final bool isScoreLoading;
+  final String scoreErrorMessage;
 
   const UserProfileChip({
     super.key,
     required this.userName,
     required this.userInitials,
     required this.userXP,
+    required this.isScoreLoading,
+    required this.scoreErrorMessage,
   });
 
   @override
@@ -52,29 +56,55 @@ class UserProfileChip extends StatelessWidget {
                     color: kTextDark,
                   ),
                 ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.emoji_events_rounded,
-                      size: 13,
-                      color: kPrimary,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      '$userXP Score',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: kPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+                _buildScoreStatus(),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildScoreStatus() {
+    if (isScoreLoading) {
+      return const Row(
+        children: [
+          SizedBox(
+            width: 11,
+            height: 11,
+            child: CircularProgressIndicator(strokeWidth: 1.5, color: kPrimary),
+          ),
+          SizedBox(width: 5),
+          Text(
+            'Loading score',
+            style: TextStyle(
+              fontSize: 11,
+              color: kPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final hasError = scoreErrorMessage.isNotEmpty;
+    return Row(
+      children: [
+        Icon(
+          hasError ? Icons.error_outline_rounded : Icons.emoji_events_rounded,
+          size: 13,
+          color: hasError ? AppColors.error : kPrimary,
+        ),
+        const SizedBox(width: 3),
+        Text(
+          hasError ? scoreErrorMessage : '$userXP Score',
+          style: TextStyle(
+            fontSize: 11,
+            color: hasError ? AppColors.error : kPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

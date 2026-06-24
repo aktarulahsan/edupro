@@ -10,12 +10,18 @@ class ExamSetModel {
   final int userId;
   final String setName;
   final DateTime createdAt;
+  final int? userScore;
+  final int? userTotalQuestions;
+  final bool? passed;
 
   ExamSetModel({
     required this.setNo,
     required this.userId,
     required this.setName,
     required this.createdAt,
+    this.userScore,
+    this.userTotalQuestions,
+    this.passed,
   });
 
   factory ExamSetModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +30,9 @@ class ExamSetModel {
       userId: json['userId'],
       setName: json['setName'],
       createdAt: DateTime.parse(json['createdAt']),
+      userScore: json['userScore'],
+      userTotalQuestions: json['userTotalQuestions'],
+      passed: json['passed'],
     );
   }
 
@@ -33,6 +42,9 @@ class ExamSetModel {
       'userId': userId,
       'setName': setName,
       'createdAt': createdAt.toIso8601String(),
+      'userScore': userScore,
+      'userTotalQuestions': userTotalQuestions,
+      'passed': passed,
     };
   }
 }
