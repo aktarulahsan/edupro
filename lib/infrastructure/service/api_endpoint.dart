@@ -78,6 +78,9 @@ class QuizModule {
 
   String getDashboardData(int studentId) =>
       p.join(_baseURL, 'submit/student_dashboard?studentId=$studentId');
+
+  String getLeaderboardData(int studentId) =>
+      p.join(_baseURL, 'home/leaderboard?studentId=$studentId');
 }
 
 class TaskModule {

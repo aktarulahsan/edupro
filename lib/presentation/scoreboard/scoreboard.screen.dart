@@ -1,4 +1,5 @@
 import 'package:edupro/infrastructure/dal/model/scoreboard_model.dart';
+import 'package:edupro/infrastructure/dal/model/leaderboard_model.dart';
 import 'package:edupro/infrastructure/theme/app_colors.dart';
 import 'package:edupro/presentation/scoreboard/controllers/scoreboard.controller.dart';
 import 'package:flutter/material.dart';
@@ -12,42 +13,93 @@ class ScoreboardScreen extends GetView<ScoreboardController> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+      bottomNavigationBar: Obx(() {
+        if (controller.activeTab.value == 1 &&
+            controller.leaderboardData.value != null &&
+            !controller.isLeaderboardLoading.value &&
+            controller.leaderboardErrorMessage.value.isEmpty) {
+          return _buildPersistentStickyBottomBar(controller.leaderboardData.value!.currentUser);
         }
-
-        if (controller.errorMessage.value.isNotEmpty) {
-          return _buildErrorWidget();
-        }
-
-        if (controller.dashboardData.value == null) {
-          return _buildEmptyWidget();
-        }
-
-        final data = controller.dashboardData.value!;
-        return RefreshIndicator(
-          onRefresh: () => controller.getDashboardData(),
-          color: AppColors.primary,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStatsGrid(data),
-                const SizedBox(height: 24),
-                _buildPerformanceChart(data),
-                const SizedBox(height: 24),
-                _buildBestAndLatestSection(data),
-                const SizedBox(height: 24),
-                _buildRecentSubmissions(data.recentSubmissions),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        );
+        return const SizedBox.shrink();
       }),
+      body: Column(
+        children: [
+          _buildTabToggle(),
+          Expanded(
+            child: Obx(() {
+              if (controller.activeTab.value == 0) {
+                // MY PERFORMANCE
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (controller.errorMessage.value.isNotEmpty) {
+                  return _buildErrorWidget();
+                }
+
+                if (controller.dashboardData.value == null) {
+                  return _buildEmptyWidget();
+                }
+
+                final data = controller.dashboardData.value!;
+                return RefreshIndicator(
+                  onRefresh: () => controller.getDashboardData(),
+                  color: AppColors.primary,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatsGrid(data),
+                        const SizedBox(height: 24),
+                        _buildPerformanceChart(data),
+                        const SizedBox(height: 24),
+                        _buildBestAndLatestSection(data),
+                        const SizedBox(height: 24),
+                        _buildRecentSubmissions(data.recentSubmissions),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                // DAILY LEADERBOARD
+                if (controller.isLeaderboardLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (controller.leaderboardErrorMessage.value.isNotEmpty) {
+                  return _buildLeaderboardErrorWidget();
+                }
+
+                if (controller.leaderboardData.value == null) {
+                  return _buildLeaderboardEmptyWidget();
+                }
+
+                final leaderboard = controller.leaderboardData.value!;
+                return RefreshIndicator(
+                  onRefresh: () => controller.getLeaderboardData(),
+                  color: AppColors.primary,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLeaderboardHeader(),
+                        const SizedBox(height: 16),
+                        _buildLeaderboardList(leaderboard),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                );
+              }
+            }),
+          ),
+        ],
+      ),
     );
   }
 
@@ -372,7 +424,7 @@ class ScoreboardScreen extends GetView<ScoreboardController> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: submissions.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          separatorBuilder: (_, _) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             return _SubmissionCard(submission: submissions[index]);
           },
@@ -386,6 +438,453 @@ class ScoreboardScreen extends GetView<ScoreboardController> {
     if (percentage >= 60) return const Color(0xFFF59E0B);
     if (percentage >= 40) return const Color(0xFFF97316);
     return AppColors.error;
+  }
+
+  Widget _buildTabToggle() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => controller.activeTab.value = 0,
+              child: Obx(() {
+                final selected = controller.activeTab.value == 0;
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: selected ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: selected
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                        : null,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'My Performance',
+                    style: TextStyle(
+                      fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                      color: selected ? AppColors.primary : Colors.grey.shade600,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => controller.activeTab.value = 1,
+              child: Obx(() {
+                final selected = controller.activeTab.value == 1;
+                return Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: selected ? Colors.white : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: selected
+                        ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                        : null,
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Daily Leaderboard',
+                    style: TextStyle(
+                      fontWeight: selected ? FontWeight.bold : FontWeight.w500,
+                      color: selected ? AppColors.primary : Colors.grey.shade600,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardHeader() {
+    final now = DateTime.now();
+    final formatter = '${now.day} ${_getMonthName(now.month)}, ${now.year}';
+
+    return Row(
+      children: [
+        const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.textSecondary),
+        const SizedBox(width: 8),
+        Text(
+          "Today's Standings • $formatter",
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getMonthName(int month) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    if (month >= 1 && month <= 12) {
+      return months[month - 1];
+    }
+    return '';
+  }
+
+  Widget _buildLeaderboardList(LeaderboardResponse leaderboard) {
+    if (leaderboard.topUsers.isEmpty) {
+      return _buildLeaderboardEmptyWidget();
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: leaderboard.topUsers.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final user = leaderboard.topUsers[index];
+        return _buildLeaderboardUserRow(user);
+      },
+    );
+  }
+
+  Widget _buildLeaderboardUserRow(LeaderboardUser user) {
+    final isTop3 = user.rank >= 1 && user.rank <= 3;
+    
+    Widget rankIndicator;
+    if (user.rank == 1) {
+      rankIndicator = const Text('🥇', style: TextStyle(fontSize: 26), textAlign: TextAlign.center);
+    } else if (user.rank == 2) {
+      rankIndicator = const Text('🥈', style: TextStyle(fontSize: 26), textAlign: TextAlign.center);
+    } else if (user.rank == 3) {
+      rankIndicator = const Text('🥉', style: TextStyle(fontSize: 26), textAlign: TextAlign.center);
+    } else {
+      rankIndicator = Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          '${user.rank}',
+          style: TextStyle(
+            color: Colors.grey.shade700,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+      );
+    }
+
+    Color avatarColor;
+    if (user.rank == 1) {
+      avatarColor = const Color(0xFFFBBF24); // Gold
+    } else if (user.rank == 2) {
+      avatarColor = const Color(0xFF94A3B8); // Silver
+    } else if (user.rank == 3) {
+      avatarColor = const Color(0xFFD97706); // Bronze
+    } else {
+      avatarColor = AppColors.primary.withValues(alpha: 0.7);
+    }
+
+    final userInitials = _getInitials(user.name);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: isTop3 ? avatarColor.withValues(alpha: 0.2) : AppColors.border,
+          width: isTop3 ? 1.5 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 40,
+            child: rankIndicator,
+          ),
+          const SizedBox(width: 8),
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: avatarColor,
+            child: Text(
+              userInitials,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (user.email.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    user.email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: isTop3 ? avatarColor.withValues(alpha: 0.12) : Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.stars_rounded,
+                  color: isTop3 ? avatarColor : AppColors.textTertiary,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${user.score}',
+                  style: TextStyle(
+                    color: isTop3 ? avatarColor : AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersistentStickyBottomBar(LeaderboardUser currentUser) {
+    final hasRank = currentUser.rank > 0;
+    final userInitials = _getInitials(currentUser.name);
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.secondary, // Dark Slate
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 16,
+            offset: Offset(0, -4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: SafeArea(
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                hasRank ? '#${currentUser.rank}' : '-',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: AppColors.primary,
+              child: Text(
+                userInitials,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'You',
+                    style: TextStyle(
+                      color: AppColors.textWhite70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    currentUser.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.xpGold,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.stars_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${currentUser.score} XP',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardErrorWidget() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+            const SizedBox(height: 16),
+            Text(
+              controller.leaderboardErrorMessage.value,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => controller.getLeaderboardData(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardEmptyWidget() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.emoji_events_outlined, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              'No scores recorded today',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Be the first to complete a quiz today!',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'G';
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    if (parts.isNotEmpty) {
+      return parts.first.substring(0, parts.first.length >= 2 ? 2 : 1).toUpperCase();
+    }
+    return 'G';
   }
 }
 

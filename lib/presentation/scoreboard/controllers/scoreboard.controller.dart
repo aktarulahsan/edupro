@@ -1,6 +1,7 @@
 import 'package:edupro/infrastructure/dal/daos/baseResponse.dart';
 import 'package:edupro/infrastructure/dal/daos/usersModel.dart';
 import 'package:edupro/infrastructure/dal/model/scoreboard_model.dart';
+import 'package:edupro/infrastructure/dal/model/leaderboard_model.dart';
 import 'package:edupro/infrastructure/service/apiService.dart';
 import 'package:edupro/infrastructure/service/api_endpoint.dart';
 import 'package:get/get.dart';
@@ -11,10 +12,16 @@ class ScoreboardController extends GetxController {
   final dashboardData = Rx<DashboardData?>(null);
   final selectedSubmissionIndex = 0.obs;
 
+  final isLeaderboardLoading = false.obs;
+  final leaderboardErrorMessage = ''.obs;
+  final leaderboardData = Rx<LeaderboardResponse?>(null);
+  final activeTab = 0.obs; // 0 for Performance, 1 for Daily Leaderboard
+
   @override
   void onInit() {
     super.onInit();
     getDashboardData();
+    getLeaderboardData();
   }
 
   Future<void> getDashboardData() async {
@@ -60,6 +67,52 @@ class ScoreboardController extends GetxController {
     } catch (e) {
       errorMessage.value = e.toString();
       isLoading.value = false;
+    }
+  }
+
+  Future<void> getLeaderboardData() async {
+    try {
+      isLeaderboardLoading.value = true;
+      leaderboardErrorMessage.value = '';
+
+      final user = UserCache.getUserData();
+      final studentId = user?.userId;
+      if (studentId == null) {
+        leaderboardErrorMessage.value = 'User not found';
+        isLeaderboardLoading.value = false;
+        return;
+      }
+
+      final options = UserCache.getOption();
+      final requestPayload = APIRequestParam(
+        path: ApiEndPoints.quizModule.getLeaderboardData(studentId),
+        options: options,
+      );
+
+      final response = await AppApiProvider.instance.get(requestPayload);
+
+      response.fold(
+        (error) {
+          leaderboardErrorMessage.value = error.toString();
+          isLeaderboardLoading.value = false;
+        },
+        (success) {
+          final res = BaseResponse.fromJson(success.data);
+          if (res.success == true || res.status == 'success') {
+            if (res.obj != null) {
+              leaderboardData.value = LeaderboardResponse.fromJson(res.obj);
+            } else {
+              leaderboardErrorMessage.value = 'No data available';
+            }
+          } else {
+            leaderboardErrorMessage.value = res.message ?? 'Unknown error occurred';
+          }
+          isLeaderboardLoading.value = false;
+        },
+      );
+    } catch (e) {
+      leaderboardErrorMessage.value = e.toString();
+      isLeaderboardLoading.value = false;
     }
   }
 
