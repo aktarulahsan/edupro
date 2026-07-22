@@ -67,7 +67,7 @@ class _BannerSliderState extends State<BannerSlider> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 120,
+      height: 100,
       color: kCardBg,
       child: PageView.builder(
         controller: _pageController,

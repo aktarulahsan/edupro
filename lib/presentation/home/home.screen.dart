@@ -33,12 +33,17 @@ class HomeScreen extends GetView<HomeController> {
             const Divider(height: 1, color: kDivider),
             Expanded(
               child: const SingleChildScrollView(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  top: 1,
+                  bottom: 6,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     HomePerformanceSection(),
-                    SizedBox(height: 10),
+                    // SizedBox(height: 10),
                     Text(
                       'Explore Practice',
                       style: TextStyle(
