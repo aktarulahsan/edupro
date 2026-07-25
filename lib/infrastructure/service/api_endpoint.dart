@@ -13,9 +13,9 @@ class ApiEndPoints {
   // static const String baseURL = 'http://192.168.1.147:3000/';
   static const String apiVersion = 'api/';
 
-  static const String baseURL2 = 'http://192.168.1.147:9017/wah/';
+  // static const String baseURL2 = 'http://192.168.1.147:9017/wah/';
   // static const String baseURL2 = 'http://195.35.24.112:9018/wah/';
-  // static const String baseURL2 = 'http://195.35.24.112:9017/wah/';
+  static const String baseURL2 = 'http://72.60.198.43:9017/wah/';
   // static const String baseURL2 = 'http://192.168.2.125:9017/wah/';
   // static const String baseURL2 = 'http://192.168.2.125:3000/';
   // static const String apiVersion2 = 'api/v1/';
