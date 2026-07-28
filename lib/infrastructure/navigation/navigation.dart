@@ -6,6 +6,7 @@ import '../../config.dart';
 import '../../presentation/screens.dart';
 import 'bindings/controllers/controllers_bindings.dart';
 import 'routes.dart';
+import '../../presentation/auth/controllers/signup.controller.dart';
 
 class EnvironmentsBadge extends StatelessWidget {
   final Widget child;
@@ -75,6 +76,13 @@ class Nav {
       name: Routes.SCOREBOARD,
       page: () => const ScoreboardScreen(),
       binding: ScoreboardControllerBinding(),
+    ),
+    GetPage(
+      name: Routes.SIGNUP,
+      page: () => const SignupScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<SignupController>(() => SignupController());
+      }),
     ),
   ];
 }

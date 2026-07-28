@@ -191,7 +191,7 @@ class AuthScreen extends GetView<AuthController> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
-          'have_an_account_already',
+          "Don't have an account?",
           style: TextStyle(color: Colors.black),
         ),
         const SizedBox(width: 10),

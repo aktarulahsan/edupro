@@ -8,3 +8,4 @@ export 'package:edupro/presentation/scoreboard/scoreboard.screen.dart';
 export 'package:edupro/presentation/setting/setting.screen.dart';
 export 'package:edupro/presentation/splash/splash.screen.dart';
 export 'package:edupro/presentation/subjective/subjective.screen.dart';
+export 'package:edupro/presentation/auth/signup.screen.dart';

@@ -14,4 +14,5 @@ class Routes {
   static const SPLASH = '/splash';
   static const SUBJECTIVE = '/subjective';
   static const SCOREBOARD = '/scoreboard';
+  static const SIGNUP = '/signup';
 }
